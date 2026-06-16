@@ -2,6 +2,10 @@
 
 A production-ready robot control platform combining CrewAI multi-agent systems, reactive control, and web-based natural language interfaces for intelligent robot operations.
 
+![LLM Robot Control web interface](docs/images/web-control-ui.png)
+
+> Web control interface: enter a natural-language mission command, monitor real-time robot status and sensors, and watch the live mission log.
+
 ## Project Overview
 
 LLM_ROBOT_2 is a comprehensive robot control system that enables natural language mission commands through a multi-agent AI architecture. The system integrates planning, execution, verification, and reactive control with real-time web-based monitoring and control.
