@@ -1,0 +1,428 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>3</epicId>
+    <storyId>5</storyId>
+    <title>Epic 3 Integration Testing</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-03</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/3-5-integration-testing.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>development team</asA>
+    <iWant>to validate that all Epic 3 components work together seamlessly through comprehensive integration testing</iWant>
+    <soThat>we can deploy with confidence knowing the reactive controller, web control server, and environment detection features integrate properly without breaking existing functionality</soThat>
+    <tasks>
+      <task id="1" status="pending">
+        <title>End-to-End Integration Test Suite (AC: #1)</title>
+        <subtasks>
+          <subtask id="1.1">Create tests/integration/test_epic3_e2e.py test file</subtask>
+          <subtask id="1.2">Implement test_web_to_reactive_controller_e2e() - Web UI → Reactive detour → Success</subtask>
+          <subtask id="1.3">Implement test_environment_detection_integration() - Sensor data → Environment detection → RAG filter → Plan</subtask>
+          <subtask id="1.4">Implement test_full_workflow_indoor() - Indoor mission with reactive events</subtask>
+          <subtask id="1.5">Implement test_full_workflow_outdoor() - Outdoor mission with GPS navigation</subtask>
+          <subtask id="1.6">Implement test_concurrent_missions() - Multiple sequential missions with isolation verification</subtask>
+          <subtask id="1.7">Implement test_reactive_log_visualization() - WebSocket real-time reactive event broadcasting</subtask>
+          <subtask id="1.8">Implement test_ollama_moderate_detour_e2e() - MODERATE level detour execution</subtask>
+          <subtask id="1.9">Implement test_critical_emergency_stop_e2e() - CRITICAL level emergency stop + replanning</subtask>
+          <subtask id="1.10">Implement test_mission_success_with_multiple_detours() - Multiple reactive interventions</subtask>
+          <subtask id="1.11">Implement test_environment_change_between_missions() - Different environments across missions</subtask>
+          <subtask id="1.12">Add comprehensive test fixtures and mock data</subtask>
+        </subtasks>
+      </task>
+      <task id="2" status="pending">
+        <title>Performance and Load Testing (AC: #2)</title>
+        <subtasks>
+          <subtask id="2.1">Create tests/performance/test_load_testing.py test file</subtask>
+          <subtask id="2.2">Implement test_concurrent_web_requests() - 10 simultaneous WebSocket connections</subtask>
+          <subtask id="2.3">Implement test_websocket_message_throughput() - 100+ messages stability test</subtask>
+          <subtask id="2.4">Implement test_ollama_concurrent_inference() - Simulate multiple reactive calls</subtask>
+          <subtask id="2.5">Add response time assertions (<5 seconds for all requests)</subtask>
+          <subtask id="2.6">Measure and log performance metrics (latency, throughput, error rate)</subtask>
+          <subtask id="2.7">Generate performance test report with metrics visualization</subtask>
+        </subtasks>
+      </task>
+      <task id="3" status="pending">
+        <title>Error Handling and Graceful Degradation Tests (AC: #3)</title>
+        <subtasks>
+          <subtask id="3.1">Create tests/integration/test_error_handling.py test file</subtask>
+          <subtask id="3.2">Implement test_ollama_failure_graceful_degradation() - Ollama service stop, verify rules-only fallback</subtask>
+          <subtask id="3.3">Implement test_websocket_disconnect_reconnect() - Client disconnect, verify auto-reconnect</subtask>
+          <subtask id="3.4">Implement test_network_error_handling() - Simulate network errors, verify error responses</subtask>
+          <subtask id="3.5">Implement test_webots_simulator_error_recovery() - Simulate Webots crash, verify cleanup</subtask>
+          <subtask id="3.6">Test timeout handling (Ollama >1500ms timeout)</subtask>
+          <subtask id="3.7">Test reactive cache corruption recovery</subtask>
+          <subtask id="3.8">Test environment misclassification handling (low confidence scenarios)</subtask>
+        </subtasks>
+      </task>
+      <task id="4" status="pending">
+        <title>Regression Test Execution (AC: #4)</title>
+        <subtasks>
+          <subtask id="4.1">Execute full Epic 1-2 test suite (pytest tests/ -v --cov=src)</subtask>
+          <subtask id="4.2">Verify all 270+ tests pass (100% pass rate required)</subtask>
+          <subtask id="4.3">Generate HTML coverage report (htmlcov/index.html)</subtask>
+          <subtask id="4.4">Verify test coverage remains >80% (check coverage report)</subtask>
+          <subtask id="4.5">Identify and fix any test failures or regressions</subtask>
+          <subtask id="4.6">Document any backward compatibility issues found</subtask>
+          <subtask id="4.7">Verify no Epic 3 changes impact existing Epic 1-2 functionality</subtask>
+        </subtasks>
+      </task>
+      <task id="5" status="pending">
+        <title>Integration Test Documentation (AC: #5)</title>
+        <subtasks>
+          <subtask id="5.1">Create docs/test_plan_epic3.md - comprehensive test plan</subtask>
+          <subtask id="5.2">Document all 10+ E2E test scenarios with inputs/expected outputs</subtask>
+          <subtask id="5.3">Document performance test scenarios and acceptance criteria</subtask>
+          <subtask id="5.4">Document error handling test scenarios</subtask>
+          <subtask id="5.5">Create docs/integration_test_report.md - test results report</subtask>
+          <subtask id="5.6">Include test execution summary (pass/fail counts, coverage, duration)</subtask>
+          <subtask id="5.7">Document any bugs discovered with severity and status</subtask>
+          <subtask id="5.8">Add test environment setup instructions</subtask>
+          <subtask id="5.9">Include troubleshooting section for common test failures</subtask>
+        </subtasks>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1" priority="high">
+      <title>End-to-End Integration Tests</title>
+      <description>Full workflow testing: Web UI → FastAPI WebSocket → Orchestrator → Reactive Controller → Environment Detection. Natural language command → real-time obstacle avoidance → environment recognition → mission success scenarios. Minimum 10 integration scenarios covering different combinations of Epic 3 features. All scenarios must pass (100% success rate).</description>
+    </criterion>
+    <criterion id="2" priority="high">
+      <title>Performance Validation (Load Testing)</title>
+      <description>Handle 10 concurrent web requests without degradation. WebSocket connection stability verified (100+ messages per connection). Ollama concurrent inference load testing (multiple reactive decisions). Response time <5 seconds for all requests (meets SLA).</description>
+    </criterion>
+    <criterion id="3" priority="high">
+      <title>Error Propagation Testing (Graceful Degradation)</title>
+      <description>Ollama service failure → verify graceful degradation to rules-only reactive mode. WebSocket disconnect → verify auto-reconnect functionality (3 retry attempts). Network errors → verify error handling and appropriate error responses. Webots simulator errors → verify cleanup and recovery procedures.</description>
+    </criterion>
+    <criterion id="4" priority="critical">
+      <title>Regression Testing (Backward Compatibility)</title>
+      <description>Re-run all 270+ Epic 1-2 tests to ensure no functionality broken. Verify existing features work normally (no regressions). Confirm new features don't impact old code negatively. Maintain test coverage >80% across entire codebase.</description>
+    </criterion>
+    <criterion id="5" priority="medium">
+      <title>Integration Test Documentation</title>
+      <description>Create comprehensive test plan document (test_plan_epic3.md). Document all test scenarios with expected outcomes. Generate test results report (integration_test_report.md). Track and document any bugs discovered during testing.</description>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/tech-spec-epic-3.md</path>
+        <title>Epic 3 Technical Specification</title>
+        <section>Story 3.5: Epic 3 Integration Testing (5 ACs)</section>
+        <snippet>Story 3.5 provides 5 acceptance criteria: (1) E2E integration tests validating full workflow across 10+ scenarios, (2) Performance validation with 10 concurrent requests and response times <5s, (3) Error propagation tests for graceful degradation, (4) Regression testing of 270+ Epic 1-2 tests maintaining >80% coverage, (5) Integration test documentation including test plan and results report.</snippet>
+      </doc>
+      <doc>
+        <path>docs/tech-spec-epic-3.md</path>
+        <title>Epic 3 Technical Specification</title>
+        <section>Test Strategy Summary</section>
+        <snippet>Epic 3 testing follows a risk-based, layered approach with emphasis on backward compatibility and performance validation. Test pyramid: E2E tests (10+ scenarios) → Integration tests (~20 tests) → Unit tests (~40 tests) + Regression tests (270+ existing). Expected total: ~345 tests (270 regression + 75 new). Target coverage >80%.</snippet>
+      </doc>
+      <doc>
+        <path>docs/tech-spec-epic-3.md</path>
+        <title>Epic 3 Technical Specification</title>
+        <section>Story 3.5 Implementation Details - Test Files</section>
+        <snippet>Test files to create: tests/integration/test_epic3_e2e.py (~500 lines, 10+ E2E scenarios), tests/performance/test_load_testing.py (~200 lines, load tests), tests/integration/test_error_handling.py (~300 lines, error handling scenarios). Documentation: docs/test_plan_epic3.md, docs/integration_test_report.md.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown and Story Details</title>
+        <section>Story 3.5: Epic 3 Integration Testing</section>
+        <snippet>Story 3.5 validates Epic 3 components integration through comprehensive testing. Includes 10+ E2E scenarios (web to reactive, environment detection, indoor/outdoor missions), load testing (10 concurrent requests), error handling (Ollama failure, WebSocket disconnects), and regression testing (270+ Epic 1-2 tests). Estimated effort: 4 hours.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>LLM_ROBOT_2 Architecture</title>
+        <section>Testing Standards</section>
+        <snippet>Test framework: pytest with coverage plugin. Test categories: (1) Unit Tests - individual component testing with mocks, (2) Integration Tests - multi-component interaction testing, (3) E2E Tests - full workflow testing from user input to mission completion, (4) Performance Tests - load testing and benchmark validation, (5) Regression Tests - backward compatibility verification.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/3-3-environment-aware-planning.md</path>
+        <title>Story 3.3: Environment-Aware Planning</title>
+        <section>Learnings from Previous Story - Integration Test Insights</section>
+        <snippet>Key integration testing lessons: (1) Test fixtures must match actual constructor signatures (RobotKnowledgeBase fixture issues), (2) Database state management - ChromaDB test database needed cleanup for fresh population, (3) Metadata consistency - environment metadata needed in both data files and population logic. Integration test patterns: fixture-based setup with dependency injection, mock sensor data for controlled scenarios, ChromaDB test database isolation.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>pytest.ini</path>
+        <kind>configuration</kind>
+        <symbol>pytest configuration</symbol>
+        <lines>1-25</lines>
+        <reason>Pytest configuration with test discovery settings, output options, test markers (slow, last), and async test support. Defines testpaths, python_files/classes/functions patterns, and asyncio_mode=auto for CrewAI async agents.</reason>
+      </artifact>
+      <artifact>
+        <path>tests/conftest.py</path>
+        <kind>configuration</kind>
+        <symbol>pytest fixtures and setup</symbol>
+        <lines>1-27</lines>
+        <reason>Pytest configuration file that automatically loads .env file for all tests, verifying OPENAI_API_KEY is loaded. Provides project-wide test fixtures and setup.</reason>
+      </artifact>
+      <artifact>
+        <path>tests/integration/test_reactive_integration.py</path>
+        <kind>integration test</kind>
+        <symbol>reactive controller integration tests</symbol>
+        <lines>all</lines>
+        <reason>Integration tests for Story 3.1 Hybrid Reactive Controller. Tests ActorAgent + HybridReactiveController integration, reactive log propagation, Verifier tolerance adjustment. Pattern to reuse for E2E tests.</reason>
+      </artifact>
+      <artifact>
+        <path>tests/integration/test_environment_rag_filtering.py</path>
+        <kind>integration test</kind>
+        <symbol>environment detection + RAG filtering tests</symbol>
+        <lines>all</lines>
+        <reason>Integration tests for Story 3.3 Environment-Aware Planning. Tests PlannerAgent with environment detection, ChromaDB where filter, environment-specific constraint retrieval. 10/10 tests passing after fixture corrections.</reason>
+      </artifact>
+      <artifact>
+        <path>tests/integration/test_orchestrator_rag_integration.py</path>
+        <kind>integration test</kind>
+        <symbol>orchestrator RAG integration tests</symbol>
+        <lines>all</lines>
+        <reason>Integration tests for Orchestrator + RobotKnowledgeBase auto-initialization. 6/6 tests passing. Validates production integration with auto-populate feature. Critical pattern for E2E tests.</reason>
+      </artifact>
+      <artifact>
+        <path>tests/integration/test_web_integration.py</path>
+        <kind>integration test</kind>
+        <symbol>FastAPI web server integration tests</symbol>
+        <lines>all</lines>
+        <reason>Integration tests for Story 3.2 FastAPI Web Control Server. Tests WebSocket connections, mission execution via web requests, status broadcasting. Pattern to reuse for load testing and WebSocket stability tests.</reason>
+      </artifact>
+      <artifact>
+        <path>tests/unit/test_environment_detector.py</path>
+        <kind>unit test</kind>
+        <symbol>environment detection unit tests</symbol>
+        <lines>all</lines>
+        <reason>Unit tests for EnvironmentDetector (Story 3.3). 18/18 tests passing. Tests 4 environment scenarios + unknown case. Mock sensor data patterns can be reused for E2E tests.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <package name="pytest" version=">=7.4.0">Core testing framework</package>
+        <package name="pytest-asyncio" version=">=0.21.0">Async test support for CrewAI agents and FastAPI</package>
+        <package name="pytest-cov" version=">=4.1.0">Code coverage reporting</package>
+        <package name="pytest-html" version=">=3.2.0">HTML test reports and evaluation reports</package>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint priority="critical">
+      <title>Test-Only Story</title>
+      <description>No production code changes allowed. All code implementation completed in Stories 3.0-3.3. Focus exclusively on test creation and validation.</description>
+    </constraint>
+    <constraint priority="critical">
+      <title>Regression Testing Required</title>
+      <description>All 270+ Epic 1-2 tests must continue passing (100% pass rate). Any test failures must be investigated and resolved before story completion.</description>
+    </constraint>
+    <constraint priority="high">
+      <title>Test Coverage Maintenance</title>
+      <description>Overall test coverage must remain >80%. Verify coverage using pytest --cov=src --cov-report=html. Review htmlcov/index.html for coverage details.</description>
+    </constraint>
+    <constraint priority="high">
+      <title>E2E Test Coverage</title>
+      <description>Minimum 10 E2E integration scenarios required, covering: (1) Web → Reactive → Success, (2) Environment detection integration, (3) Indoor/Outdoor missions, (4) Concurrent missions, (5) Reactive log visualization, (6-10) Additional reactive and environment scenarios.</description>
+    </constraint>
+    <constraint priority="high">
+      <title>Performance Targets</title>
+      <description>Load tests must validate: (1) 10 concurrent WebSocket connections stable, (2) Response times <5 seconds for all requests, (3) WebSocket message throughput >100 messages without errors, (4) Ollama concurrent inference handles multiple reactive calls.</description>
+    </constraint>
+    <constraint priority="medium">
+      <title>Error Handling Validation</title>
+      <description>Error tests must verify graceful degradation: (1) Ollama service failure → rules-only fallback, (2) WebSocket disconnect → auto-reconnect (3 retries), (3) Network errors → appropriate error responses, (4) Webots errors → cleanup and recovery.</description>
+    </constraint>
+    <constraint priority="medium">
+      <title>Test Documentation Required</title>
+      <description>Must create: (1) docs/test_plan_epic3.md with all test scenarios documented, (2) docs/integration_test_report.md with test execution results, pass/fail counts, coverage metrics, and any bugs discovered.</description>
+    </constraint>
+    <constraint priority="low">
+      <title>Test Execution Environment</title>
+      <description>Tests require: (1) Python 3.11+ with all dependencies, (2) Webots R2025a running, (3) Ollama service with tinyllama model, (4) FastAPI server on port 8000, (5) 8GB RAM, 4 CPU cores minimum.</description>
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Pytest Fixtures</name>
+      <kind>test pattern</kind>
+      <signature>
+@pytest.fixture
+def robot_knowledge_base(openai_api_key: str) -> RobotKnowledgeBase:
+    """
+    Fixture for RobotKnowledgeBase with auto-populate feature.
+    Ensures consistent test database setup.
+    """
+    return RobotKnowledgeBase(openai_api_key=openai_api_key)
+      </signature>
+      <path>tests/integration/test_orchestrator_rag_integration.py</path>
+    </interface>
+    <interface>
+      <name>Mock Sensor Data Pattern</name>
+      <kind>test data</kind>
+      <signature>
+INDOOR_SENSOR_DATA = {
+    "gps_signal": 0.2,
+    "lidar_ranges": [1.5, 2.0, 1.8, 2.2, 1.9] * 72,  # 360 samples
+    "camera_brightness": 150
+}
+
+OUTDOOR_SENSOR_DATA = {
+    "gps_signal": 0.9,
+    "lidar_ranges": [10.0, 12.0, 11.5, 9.8] * 90,
+    "camera_brightness": 220
+}
+      </signature>
+      <path>tests/unit/test_environment_detector.py</path>
+    </interface>
+    <interface>
+      <name>WebSocket Test Client Pattern</name>
+      <kind>integration test pattern</kind>
+      <signature>
+async def test_websocket_connection():
+    """
+    Pattern for testing WebSocket connections to FastAPI server.
+    Establishes connection, sends requests, verifies responses.
+    """
+    async with websockets.connect("ws://localhost:8000/ws/control") as websocket:
+        # Send mission request
+        await websocket.send(json.dumps(mission_request))
+        # Receive response
+        response = await websocket.recv()
+        # Verify response
+        assert response["success"] == True
+      </signature>
+      <path>tests/integration/test_web_integration.py</path>
+    </interface>
+    <interface>
+      <name>E2E Test Structure</name>
+      <kind>test pattern</kind>
+      <signature>
+def test_full_e2e_workflow():
+    """
+    E2E test structure pattern:
+    1. Setup: Initialize components (Orchestrator, WebSocket, etc.)
+    2. Execute: Run full mission workflow
+    3. Verify: Check all acceptance criteria met
+    4. Teardown: Cleanup resources
+    """
+    # Setup
+    orchestrator = setup_orchestrator_with_reactive()
+
+    # Execute
+    result = orchestrator.execute_mission(mission_command)
+
+    # Verify
+    assert result.success == True
+    assert result.reactive_events > 0
+
+    # Teardown
+    cleanup_resources()
+      </signature>
+      <path>tests/integration/test_reactive_integration.py</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      <paragraph>
+        Testing follows pytest framework with conftest.py fixtures for project-wide setup. Test organization: tests/unit/ for component tests, tests/integration/ for multi-component tests, tests/performance/ for load/benchmark tests. Coverage reporting via pytest-cov with >80% target. Async test support via pytest-asyncio for CrewAI agents and FastAPI. Test markers: @pytest.mark.slow for long-running tests, @pytest.mark.last for evaluation summaries. All tests auto-discover via test_*.py pattern. Environment setup via conftest.py loads .env for OPENAI_API_KEY. Integration tests use fixtures for RobotKnowledgeBase, mock sensor data, and WebSocket clients. E2E tests validate full workflows from user input to mission completion with reactive interventions and environment detection.
+      </paragraph>
+    </standards>
+    <locations>
+      <location>tests/integration/test_epic3_e2e.py (NEW - 10+ E2E scenarios)</location>
+      <location>tests/performance/test_load_testing.py (NEW - load tests)</location>
+      <location>tests/integration/test_error_handling.py (NEW - error handling)</location>
+      <location>tests/integration/ (existing integration tests from Stories 3.1-3.3)</location>
+      <location>tests/unit/ (existing unit tests from Stories 3.0-3.3)</location>
+      <location>tests/ (270+ Epic 1-2 regression tests)</location>
+    </locations>
+    <ideas>
+      <idea acceptanceCriterion="1">
+        <title>E2E: Web to Reactive Controller</title>
+        <description>Test full workflow: WebSocket → FastAPI → Orchestrator → Reactive Controller → Success. Send natural language command "장애물 회피하며 5미터 전진", verify reactive intervention when obstacle detected, verify mission success with reactive log.</description>
+      </idea>
+      <idea acceptanceCriterion="1">
+        <title>E2E: Environment Detection Integration</title>
+        <description>Test environment detection + RAG filtering: Inject indoor sensor data (GPS=0.2, Lidar=2m), verify EnvironmentDetector classifies as "indoor", verify Planner retrieves only indoor constraints, verify mission adapts to indoor environment.</description>
+      </idea>
+      <idea acceptanceCriterion="1">
+        <title>E2E: Indoor Mission with Reactive</title>
+        <description>Test indoor mission: GPS unavailable, Lidar-based navigation, reactive controller handles obstacles, mission completes successfully. Verify environment="indoor" and reactive_log populated.</description>
+      </idea>
+      <idea acceptanceCriterion="1">
+        <title>E2E: Outdoor Mission with GPS</title>
+        <description>Test outdoor mission: GPS-based navigation, reactive controller minimal interventions (open space), mission completes successfully. Verify environment="outdoor".</description>
+      </idea>
+      <idea acceptanceCriterion="1">
+        <title>E2E: Concurrent Missions Isolation</title>
+        <description>Test 3 sequential missions with different environments (indoor, outdoor, warehouse). Verify isolation: each mission uses correct environment constraints, reactive logs don't cross-contaminate, state properly reset between missions.</description>
+      </idea>
+      <idea acceptanceCriterion="1">
+        <title>E2E: Reactive Log WebSocket Broadcast</title>
+        <description>Test real-time reactive event broadcasting: Connect WebSocket client, start mission with obstacles, verify reactive events broadcast to client in real-time, verify client receives reactive_log updates.</description>
+      </idea>
+      <idea acceptanceCriterion="1">
+        <title>E2E: Ollama MODERATE Detour</title>
+        <description>Test MODERATE level reactive decision: Obstacle at 0.3m distance, verify Ollama called for detour plan, verify detour executed (3-step: rotate, move, rotate), verify mission continues after detour, verify reactive_log records MODERATE intervention.</description>
+      </idea>
+      <idea acceptanceCriterion="1">
+        <title>E2E: CRITICAL Emergency Stop</title>
+        <description>Test CRITICAL level reactive decision: Obstacle at 0.1m distance, verify immediate emergency stop (<1ms), verify mission fails and returns to Planner for replanning, verify reactive_log records CRITICAL intervention.</description>
+      </idea>
+      <idea acceptanceCriterion="1">
+        <title>E2E: Multiple Detours in One Mission</title>
+        <description>Test mission with 3+ reactive interventions: Multiple obstacles at varying distances, verify multiple detours executed, verify mission still succeeds, verify Verifier adjusts tolerance based on reactive_log (0.1m → 0.3m).</description>
+      </idea>
+      <idea acceptanceCriterion="1">
+        <title>E2E: Environment Change Between Missions</title>
+        <description>Test environment adaptation: Mission 1 indoor (GPS weak), Mission 2 outdoor (GPS strong), verify environment detector adapts, verify different RAG constraints used, verify both missions succeed with appropriate strategies.</description>
+      </idea>
+      <idea acceptanceCriterion="2">
+        <title>Load: 10 Concurrent WebSocket Connections</title>
+        <description>Performance test: Create 10 WebSocket clients in parallel, send 10 different mission commands simultaneously, verify all processed without errors, verify all response times <5 seconds, verify no interference between concurrent missions.</description>
+      </idea>
+      <idea acceptanceCriterion="2">
+        <title>Load: WebSocket Message Throughput</title>
+        <description>Stability test: Single WebSocket connection, send 100+ status update requests, verify all messages processed, verify no connection drops, verify message order preserved, verify average latency <50ms.</description>
+      </idea>
+      <idea acceptanceCriterion="2">
+        <title>Load: Ollama Concurrent Inference</title>
+        <description>Performance test: Simulate 5 reactive decisions simultaneously (multiple missions with MODERATE obstacles), verify Ollama handles concurrent requests, verify all responses <1200ms P90, verify cache hit rate >70%.</description>
+      </idea>
+      <idea acceptanceCriterion="3">
+        <title>Error: Ollama Service Failure</title>
+        <description>Graceful degradation test: Start mission with Ollama running, stop Ollama service mid-mission, verify reactive controller detects unavailability, verify fallback to rules-only mode (CRITICAL emergency stop or NORMAL continue), verify mission does not crash.</description>
+      </idea>
+      <idea acceptanceCriterion="3">
+        <title>Error: WebSocket Disconnect and Reconnect</title>
+        <description>Reconnection test: Establish WebSocket connection, start mission, disconnect client mid-mission, verify server continues mission, verify client auto-reconnects (3 retry attempts), verify status updates resume after reconnect.</description>
+      </idea>
+      <idea acceptanceCriterion="3">
+        <title>Error: Network Error Handling</title>
+        <description>Error response test: Simulate network timeout to FastAPI server, verify appropriate error response (503 Service Unavailable), simulate invalid JSON request, verify 400 Bad Request error, verify error messages clear and actionable.</description>
+      </idea>
+      <idea acceptanceCriterion="3">
+        <title>Error: Webots Simulator Error Recovery</title>
+        <description>Recovery test: Simulate Webots crash (process kill), verify Orchestrator detects error, verify cleanup procedures execute (close connections, release resources), verify error logged with context.</description>
+      </idea>
+      <idea acceptanceCriterion="4">
+        <title>Regression: Execute Full Epic 1-2 Test Suite</title>
+        <description>Backward compatibility test: Run pytest tests/ -v --cov=src, verify all 270+ tests pass (100% pass rate), verify test execution time reasonable (<10 minutes), generate HTML coverage report, verify coverage >80%.</description>
+      </idea>
+      <idea acceptanceCriterion="4">
+        <title>Regression: Verify Existing Functionality</title>
+        <description>Spot-check critical Epic 1-2 features: Planner generates action plans, Actor executes actions, Verifier validates results, RAG retrieves constraints, Safety Validator checks collisions, Failure Recovery triggers replanning. Verify no degradation from Epic 3 changes.</description>
+      </idea>
+      <idea acceptanceCriterion="5">
+        <title>Documentation: Test Plan Creation</title>
+        <description>Create docs/test_plan_epic3.md: Document all 10+ E2E scenarios with inputs/expected outputs/pass criteria, document performance test scenarios with acceptance thresholds, document error handling scenarios, add test environment setup instructions.</description>
+      </idea>
+      <idea acceptanceCriterion="5">
+        <title>Documentation: Test Results Report</title>
+        <description>Create docs/integration_test_report.md after test execution: Include test execution summary (pass/fail counts, duration), coverage metrics (overall and per-module), performance metrics (latency, throughput), bugs discovered with severity/status, recommendations for improvements.</description>
+      </idea>
+    </ideas>
+  </tests>
+</story-context>

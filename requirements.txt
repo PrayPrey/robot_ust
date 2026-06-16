@@ -1,0 +1,53 @@
+# LLM_ROBOT_2 - Generic LLM-based Robot Control Framework
+# Project Dependencies
+
+# Core Multi-Agent System
+crewai>=0.1.0
+crewai-tools>=0.1.0
+
+# Data Validation and Schema
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+
+# RAG and Vector Database
+chromadb>=0.4.0
+sentence-transformers>=2.2.0
+
+# Webots Robot Simulator
+# Note: Webots must be installed separately from https://cyberbotics.com/
+# Python controller is included with Webots installation
+
+# LLM Integration
+openai>=1.0.0
+langchain>=0.1.0
+langchain-openai>=0.0.5
+langchain-community>=0.0.20
+
+# Ollama - Local LLM for Epic 3 (Story 3.0)
+ollama>=0.1.0  # Ollama Python client for API calls
+httpx>=0.25.0  # Async HTTP client for Ollama calls (dependency)
+
+# Logging and Monitoring
+loguru>=0.7.0
+openlit>=0.1.0
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+pytest-html>=3.2.0  # Story 2.5: HTML evaluation reports
+
+# Utilities
+python-dotenv>=1.0.0
+numpy>=1.24.0,<2.0.0  # Langchain compatibility
+opencv-python>=4.12.0  # For camera sensor processing (optimized filters)
+matplotlib>=3.7.0  # Story 2.5: Benchmark report visualization
+
+# Optional: Performance monitoring
+prometheus-client>=0.17.0
+
+# Web Server - Story 3.2: FastAPI Web Control Server
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+websockets>=12.0
+python-socketio>=5.10.0

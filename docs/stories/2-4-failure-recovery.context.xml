@@ -1,0 +1,239 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>4</storyId>
+    <title>실패 복구 및 재계획 메커니즘</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-01</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/2-4-failure-recovery.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Verifier Agent</asA>
+    <iWant>미션 실패 시 원인을 분석하고 재계획을 요청</iWant>
+    <soThat>시스템이 자율적으로 실패를 극복할 수 있다</soThat>
+    <tasks>
+      <task id="1" ac="1">
+        <title>실패 원인 분석 로직 구현</title>
+        <subtasks>
+          <subtask>Verifier Agent에 analyze_failure_reason() 메서드 추가</subtask>
+          <subtask>_check_obstacle_collision() - Lidar 데이터로 장애물 충돌 감지</subtask>
+          <subtask>_check_path_blocked() - 목표까지 경로 차단 여부 확인</subtask>
+          <subtask>_check_goal_unreached() - GPS 데이터로 목표 미도달 확인</subtask>
+          <subtask>FailureReason enum 정의</subtask>
+          <subtask>RobotState에 failure_reason 필드 추가</subtask>
+        </subtasks>
+      </task>
+      <task id="2" ac="2,3">
+        <title>재계획 트리거 로직 구현</title>
+        <subtasks>
+          <subtask>MissionCommand 재시도 메커니즘 활용 (can_retry, increment_retry)</subtask>
+          <subtask>Verifier Agent에 should_replan() 메서드 추가</subtask>
+          <subtask>ReplanRequest Pydantic 클래스 정의</subtask>
+        </subtasks>
+      </task>
+      <task id="3" ac="4">
+        <title>CrewAI delegation으로 재계획 실행</title>
+        <subtasks>
+          <subtask>Verifier → Planner delegation 설정</subtask>
+          <subtask>delegate_to_planner() 메서드 구현</subtask>
+          <subtask>Planner Agent에 replan_mission() 메서드 추가</subtask>
+        </subtasks>
+      </task>
+      <task id="4" ac="5">
+        <title>Orchestrator 통합 및 재시도 루프</title>
+        <subtasks>
+          <subtask>Orchestrator에 재계획 루프 구현 (최대 3회)</subtask>
+          <subtask>MissionStatus에 REPLANNING 상태 추가</subtask>
+          <subtask>retry_count 로깅</subtask>
+        </subtasks>
+      </task>
+      <task id="5" ac="5">
+        <title>통합 테스트 및 E2E 시나리오</title>
+        <subtasks>
+          <subtask>유닛 테스트: test_failure_recovery.py</subtask>
+          <subtask>통합 테스트: test_replanning_integration.py</subtask>
+          <subtask>E2E 테스트: test_e2e_obstacle_recovery.py</subtask>
+        </subtasks>
+      </task>
+      <task id="6">
+        <title>문서화 및 로깅 강화</title>
+        <subtasks>
+          <subtask>재계획 이벤트 로깅 (Loguru)</subtask>
+          <subtask>API 문서화 (docstrings)</subtask>
+          <subtask>README 업데이트</subtask>
+        </subtasks>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">Verifier가 실패 원인 분석 (장애물 감지, 경로 차단, 목표 미도달 등)</criterion>
+    <criterion id="2">재계획 트리거 로직 구현 (최대 3회)</criterion>
+    <criterion id="3">Planner에게 실패 정보 전달 및 재계획 요청</criterion>
+    <criterion id="4">CrewAI delegation 활용 (Verifier → Planner)</criterion>
+    <criterion id="5">테스트: 장애물로 인한 실패 → 재계획 → 우회 경로 생성 → 성공</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>System Architecture</title>
+        <section>2.1 Mission Execution Flow</section>
+        <snippet>Verifier Agent checks success/failure and triggers replanning if needed. CrewAI delegation pattern allows Verifier to request new plans from Planner.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Story 2.4</section>
+        <snippet>실패 복구 및 재계획 메커니즘. Prerequisites: Story 1.6 (Verifier Agent), Story 2.1 (RAG). Verifier analyzes failure, triggers replanning up to 3 times, uses CrewAI delegation.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/2-3-safety-constraints.md</path>
+        <title>Previous Story - Safety Constraints</title>
+        <section>Learnings from Previous Story</section>
+        <snippet>Story 2.3 partially complete (Task 0). Pioneer 3-DX config created (src/config/robot_config.py), ActorAgent modified for accurate movement. SafetyValidator not yet implemented - Story 2.4 is independent.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>src/agents/verifier_agent.py</path>
+        <kind>agent</kind>
+        <symbol>VerifierAgent</symbol>
+        <lines>1-353</lines>
+        <reason>Primary file to modify. Already has verify_mission(), should_retry(), prepare_retry() methods. Need to add analyze_failure_reason(), should_replan(), delegate_to_planner().</reason>
+      </artifact>
+      <artifact>
+        <path>src/agents/planner_agent.py</path>
+        <kind>agent</kind>
+        <symbol>PlannerAgent</symbol>
+        <lines>1-400</lines>
+        <reason>Need to add replan_mission(failure_info) method. Already has plan_mission() for initial planning. Will use RAG for alternative strategies.</reason>
+      </artifact>
+      <artifact>
+        <path>src/agents/actor_agent.py</path>
+        <kind>agent</kind>
+        <symbol>ActorAgent</symbol>
+        <lines>1-600</lines>
+        <reason>Actor executes action plans. Will be re-invoked with new plan after replanning. No modifications needed for Story 2.4.</reason>
+      </artifact>
+      <artifact>
+        <path>src/schemas/mission_command.py</path>
+        <kind>schema</kind>
+        <symbol>MissionCommand</symbol>
+        <lines>1-150</lines>
+        <reason>Contains retry_count, max_retries=3, can_retry(), increment_retry() methods. Core retry logic already implemented in Story 1.6. Reuse these methods.</reason>
+      </artifact>
+      <artifact>
+        <path>src/schemas/robot_state.py</path>
+        <kind>schema</kind>
+        <symbol>RobotState</symbol>
+        <lines>1-100</lines>
+        <reason>Need to add failure_reason: Optional[FailureReason] field to store failure analysis results.</reason>
+      </artifact>
+      <artifact>
+        <path>src/sensors/sensor_manager.py</path>
+        <kind>service</kind>
+        <symbol>SensorManager</symbol>
+        <lines>317-359</lines>
+        <reason>Reuse is_path_clear_ahead() and get_obstacles_in_range() for failure analysis (obstacle collision detection).</reason>
+      </artifact>
+      <artifact>
+        <path>src/orchestration/orchestrator.py</path>
+        <kind>orchestrator</kind>
+        <symbol>MultiAgentOrchestrator</symbol>
+        <lines>1-307</lines>
+        <reason>Modify to add retry loop: Verifier fails → Planner replans → Actor re-executes. Loop up to 3 times (max_retries).</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <package name="crewai" version=">=0.1.0" purpose="Multi-agent framework, delegation pattern"/>
+        <package name="pydantic" version=">=2.0.0" purpose="Data validation, ReplanRequest schema"/>
+        <package name="loguru" version=">=0.7.0" purpose="Structured logging for replanning events"/>
+        <package name="openai" version=">=1.0.0" purpose="LLM for failure analysis and replanning"/>
+        <package name="chromadb" version=">=0.4.0" purpose="RAG search for alternative strategies"/>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Follow existing Verifier Agent patterns: verify_mission(), should_retry(), prepare_retry()</constraint>
+    <constraint>Use Pydantic for all new schemas (ReplanRequest, FailureReason enum)</constraint>
+    <constraint>Maximum 3 retries (max_retries=3 in MissionCommand)</constraint>
+    <constraint>CrewAI delegation pattern: Verifier calls Planner via delegation, not direct method call</constraint>
+    <constraint>Maintain 79/79 test passing rate - do not break existing tests</constraint>
+    <constraint>Log all replanning events with Loguru in JSON format</constraint>
+    <constraint>Reuse SensorManager methods from Story 2.2 (is_path_clear_ahead, get_obstacles_in_range)</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>VerifierAgent.analyze_failure_reason</name>
+      <kind>method</kind>
+      <signature>def analyze_failure_reason(self, mission: MissionCommand, final_state: RobotState) -> FailureReason</signature>
+      <path>src/agents/verifier_agent.py</path>
+      <description>Analyzes mission failure and returns reason enum (OBSTACLE_COLLISION, PATH_BLOCKED, GOAL_UNREACHED, SENSOR_FAILURE, TIMEOUT)</description>
+    </interface>
+    <interface>
+      <name>VerifierAgent.should_replan</name>
+      <kind>method</kind>
+      <signature>def should_replan(self, failure_reason: FailureReason, mission: MissionCommand) -> bool</signature>
+      <path>src/agents/verifier_agent.py</path>
+      <description>Determines if failure is recoverable via replanning. Returns True for OBSTACLE_COLLISION, PATH_BLOCKED. False for SENSOR_FAILURE.</description>
+    </interface>
+    <interface>
+      <name>VerifierAgent.delegate_to_planner</name>
+      <kind>method</kind>
+      <signature>def delegate_to_planner(self, replan_request: ReplanRequest) -> List[RobotAction]</signature>
+      <path>src/agents/verifier_agent.py</path>
+      <description>Uses CrewAI delegation to request new action plan from Planner. Returns new action_plan or raises exception if delegation fails.</description>
+    </interface>
+    <interface>
+      <name>PlannerAgent.replan_mission</name>
+      <kind>method</kind>
+      <signature>def replan_mission(self, failure_info: ReplanRequest) -> List[RobotAction]</signature>
+      <path>src/agents/planner_agent.py</path>
+      <description>Generates alternative action plan based on failure reason and sensor data. Uses RAG to search for obstacle avoidance strategies.</description>
+    </interface>
+    <interface>
+      <name>ReplanRequest</name>
+      <kind>schema</kind>
+      <signature>class ReplanRequest(BaseModel): failure_reason: FailureReason; sensor_data: SensorData; previous_plan: List[RobotAction]; retry_count: int</signature>
+      <path>src/schemas/replan_request.py</path>
+      <description>Pydantic model containing all information needed for replanning. Passed from Verifier to Planner.</description>
+    </interface>
+    <interface>
+      <name>FailureReason</name>
+      <kind>enum</kind>
+      <signature>class FailureReason(str, Enum): OBSTACLE_COLLISION = "obstacle_collision"; PATH_BLOCKED = "path_blocked"; GOAL_UNREACHED = "goal_unreached"; SENSOR_FAILURE = "sensor_failure"; TIMEOUT = "timeout"</signature>
+      <path>src/schemas/robot_state.py</path>
+      <description>Enum for categorizing mission failures. Used in RobotState.failure_reason field.</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Use pytest framework. Follow patterns from Story 2.2 (28/28 tests passing). Unit tests should mock Webots and CrewAI dependencies. Integration tests should verify Verifier-Planner delegation. E2E tests can mock or use real Webots environment. Maintain 100% test pass rate.
+    </standards>
+    <locations>
+      <location>tests/test_failure_recovery.py</location>
+      <location>tests/test_replanning_integration.py</location>
+      <location>tests/test_e2e_obstacle_recovery.py</location>
+    </locations>
+    <ideas>
+      <idea ac="1">Test analyze_failure_reason() with mock obstacle collision (Lidar data shows obstacle at 0.3m)</idea>
+      <idea ac="1">Test analyze_failure_reason() with mock path blocked scenario</idea>
+      <idea ac="1">Test analyze_failure_reason() with goal unreached (GPS shows robot stopped far from target)</idea>
+      <idea ac="2">Test should_replan() returns True for OBSTACLE_COLLISION and PATH_BLOCKED</idea>
+      <idea ac="2">Test should_replan() returns False for SENSOR_FAILURE</idea>
+      <idea ac="2">Test max_retries boundary: can_retry() returns False after 3 attempts</idea>
+      <idea ac="3,4">Test Verifier delegates to Planner with ReplanRequest (mock CrewAI delegation)</idea>
+      <idea ac="3,4">Test Planner.replan_mission() generates new action_plan different from original</idea>
+      <idea ac="5">E2E test: Place obstacle → Mission fails → Verifier analyzes → Planner replans → Actor executes new plan → Success</idea>
+      <idea ac="5">E2E test: 3 consecutive failures → Final FAILED status (no 4th retry)</idea>
+    </ideas>
+  </tests>
+</story-context>

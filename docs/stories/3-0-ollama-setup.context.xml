@@ -1,0 +1,256 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/3-0-ollama-setup" v="1.0">
+  <metadata>
+    <epicId>3</epicId>
+    <storyId>3.0</storyId>
+    <title>Ollama Setup & Validation</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-02</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/3-0-ollama-setup.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>개발자 (Developer)</asA>
+    <iWant>install and validate Ollama and the phi3.5:mini model</iWant>
+    <soThat>Story 3.1's Reactive Controller has the local LLM infrastructure ready to use</soThat>
+    <tasks>
+      - Task 1: Install Ollama Binary and Configure Service (AC: #1)
+        - 1.1: Create installation script (scripts/install_ollama.sh) with OS detection
+        - 1.2: Add service health check function (HTTP GET to localhost:11434/api/tags)
+        - 1.3: Add auto-start configuration for Ollama service
+        - 1.4: Test installation script on target OS
+
+      - Task 2: Download and Validate phi3.5:mini Model (AC: #2)
+        - 2.1: Execute 'ollama pull phi3.5:mini' command
+        - 2.2: Verify model loaded with 'ollama list' command
+        - 2.3: Check disk space requirement (>=4GB available)
+        - 2.4: Add model validation to install script
+
+      - Task 3: Implement Latency Validation Tests (AC: #3)
+        - 3.1: Create tests/test_ollama_setup.py test file
+        - 3.2: Implement test_ollama_service_running() - HTTP 200 check
+        - 3.3: Implement test_phi35_model_loaded() - Model list verification
+        - 3.4: Implement test_inference_latency() - 10 inference calls, measure p90/avg latency
+        - 3.5: Assert p90 &lt; 300ms and avg &lt; 200ms
+        - 3.6: Generate benchmark report with latency distribution
+
+      - Task 4: Implement JSON Parsing Validation (AC: #4)
+        - 4.1: Create structured output prompt template (explicit JSON schema)
+        - 4.2: Implement test_json_output_parsing() - 100 prompt test
+        - 4.3: Add JSON validation and error handling logic
+        - 4.4: Assert >95% parsing success rate
+        - 4.5: Document common parsing errors and mitigations
+
+      - Task 5: Create Installation Documentation (AC: #5)
+        - 5.1: Add "Ollama Setup" section to README.md
+        - 5.2: Create docs/ollama_setup_guide.md with detailed instructions
+        - 5.3: Document OS-specific installation steps
+        - 5.4: Create troubleshooting guide
+        - 5.5: Add sample Ollama API usage examples
+
+      - Task 6: Update Project Dependencies (AC: #5)
+        - 6.1: Add ollama>=0.1.0 to requirements.txt
+        - 6.2: Add httpx>=0.25.0 to requirements.txt
+        - 6.3: Run pip install -r requirements.txt to verify
+        - 6.4: Test Ollama Python client import and basic usage
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC-3.0.1">
+      <title>Ollama Binary Installation</title>
+      <details>
+        - Ollama installed on development environment (Linux/macOS/Windows)
+        - Installation script created (install_ollama.sh)
+        - Ollama service running confirmed at localhost:11434
+      </details>
+    </criterion>
+    <criterion id="AC-3.0.2">
+      <title>phi3.5:mini Model Download</title>
+      <details>
+        - Execute 'ollama pull phi3.5:mini' (1.9B parameter model)
+        - Model load confirmed via 'ollama list'
+        - Disk space validated (minimum 4GB available)
+      </details>
+    </criterion>
+    <criterion id="AC-3.0.3">
+      <title>Inference Latency Validation</title>
+      <details>
+        - 10 sample prompts for inference testing
+        - 90th percentile latency &lt; 300ms confirmed
+        - Average latency &lt; 200ms confirmed
+        - Results recorded in benchmark report
+      </details>
+    </criterion>
+    <criterion id="AC-3.0.4">
+      <title>JSON Output Parsing Test</title>
+      <details>
+        - Structured output prompt testing
+        - JSON parsing success rate validated (>95%)
+        - Error handling logic implemented
+      </details>
+    </criterion>
+    <criterion id="AC-3.0.5">
+      <title>Installation Documentation</title>
+      <details>
+        - Ollama installation section added to README.md
+        - Environment-specific installation guides (Linux/macOS/Windows)
+        - Troubleshooting guide created
+      </details>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/tech-spec-epic-3.md</path>
+        <title>Epic 3 Technical Specification</title>
+        <section>Dependencies and Integrations - Ollama Integration</section>
+        <snippet>Ollama service at http://localhost:11434 with phi3.5:mini model (1.9B params). Python client via ollama package. Performance targets: p90 &lt;300ms, avg ~200ms latency.</snippet>
+      </doc>
+      <doc>
+        <path>docs/tech-spec-epic-3.md</path>
+        <title>Epic 3 Technical Specification</title>
+        <section>NFRs - Performance - Ollama Performance Targets</section>
+        <snippet>Cold start &lt;5 seconds, warm inference ~200ms average, &lt;300ms p90. Cache hit rate target >70%. Memory footprint &lt;4GB RAM.</snippet>
+      </doc>
+      <doc>
+        <path>docs/tech-spec-epic-3.md</path>
+        <title>Epic 3 Technical Specification</title>
+        <section>Traceability Mapping - AC-3.0.1 through AC-3.0.5</section>
+        <snippet>All 5 acceptance criteria mapped to components, test approaches (unit/performance/manual), and specific validation methods.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Story 3.0: Ollama Setup & Validation</section>
+        <snippet>CRITICAL FIRST story of Epic 3. Establishes local LLM infrastructure (Ollama + phi3.5:mini) required for Story 3.1's Hybrid Reactive Controller. Estimated effort: 2 hours.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/2-5-monitoring-evaluation.md</path>
+        <title>Story 2.5 - Learnings</title>
+        <section>Dev Notes - Patterns to Reuse</section>
+        <snippet>Comprehensive testing (6/6 tests passing), HTML report generation, benchmark reporting, pytest framework usage, Loguru+OpenLit logging setup.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>tests/test_ollama_setup.py</path>
+        <kind>test</kind>
+        <symbol>TO BE CREATED</symbol>
+        <lines>N/A</lines>
+        <reason>Primary test file for Story 3.0 - will contain 4 test functions for Ollama validation</reason>
+      </artifact>
+      <artifact>
+        <path>scripts/install_ollama.sh</path>
+        <kind>script</kind>
+        <symbol>TO BE CREATED</symbol>
+        <lines>N/A</lines>
+        <reason>Installation script with OS detection, service health check, auto-start configuration</reason>
+      </artifact>
+      <artifact>
+        <path>docs/ollama_setup_guide.md</path>
+        <kind>documentation</kind>
+        <symbol>TO BE CREATED</symbol>
+        <lines>N/A</lines>
+        <reason>Detailed installation guide with OS-specific instructions and troubleshooting</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <existing>
+          <package name="crewai" version=">=0.1.0" />
+          <package name="pydantic" version=">=2.0.0" />
+          <package name="chromadb" version=">=0.4.0" />
+          <package name="openai" version=">=1.0.0" />
+          <package name="loguru" version=">=0.7.0" />
+          <package name="openlit" version=">=0.1.0" />
+          <package name="pytest" version=">=7.4.0" />
+          <package name="numpy" version=">=1.24.0,&lt;2.0.0" />
+          <package name="opencv-python" version=">=4.12.0" />
+        </existing>
+        <new>
+          <package name="ollama" version=">=0.1.0" purpose="Ollama Python client for API calls" />
+          <package name="httpx" version=">=0.25.0" purpose="Async HTTP client for Ollama calls" />
+        </new>
+      </python>
+      <external>
+        <service name="Ollama" version="latest" url="http://localhost:11434" purpose="Local LLM inference engine" />
+        <model name="phi3.5:mini" version="1.9B params" size="~1.9GB" purpose="Lightweight LLM for reactive decisions" />
+      </external>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="performance">
+      <rule>Ollama p90 latency MUST be &lt;300ms (critical for Story 3.1 reactive controller MODERATE decisions)</rule>
+      <rule>Ollama average latency SHOULD be ~200ms (optimal performance)</rule>
+      <rule>Cold start (model loading) MUST be &lt;5 seconds</rule>
+      <rule>Memory footprint MUST be &lt;4GB RAM during inference</rule>
+    </constraint>
+    <constraint type="testing">
+      <rule>ALL 4 test functions in tests/test_ollama_setup.py MUST pass (100% pass rate)</rule>
+      <rule>Latency test MUST run 10 inference calls and calculate p90/average</rule>
+      <rule>JSON parsing test MUST run 100 prompts and achieve >95% success rate</rule>
+      <rule>Service health check MUST verify HTTP 200 from localhost:11434/api/tags</rule>
+    </constraint>
+    <constraint type="documentation">
+      <rule>README.md MUST include Ollama setup section with OS-specific instructions</rule>
+      <rule>docs/ollama_setup_guide.md MUST provide detailed installation steps for Linux/macOS/Windows</rule>
+      <rule>Troubleshooting guide MUST cover common installation errors and solutions</rule>
+    </constraint>
+    <constraint type="architecture">
+      <rule>This is infrastructure-only story - NO modifications to src/ directory</rule>
+      <rule>NO changes to existing Epic 1-2 code (backward compatibility preserved)</rule>
+      <rule>Follow pytest structure established in Story 2.0 (Test Infrastructure)</rule>
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Ollama Python Client API</name>
+      <kind>Python Library</kind>
+      <signature>
+from ollama import Client
+client = Client(host='http://localhost:11434')
+response = client.generate(model='phi3.5:mini', prompt='...')
+      </signature>
+      <path>External - ollama package</path>
+      <usage>Story 3.1 will use this interface for reactive controller AI decisions</usage>
+    </interface>
+    <interface>
+      <name>Ollama Service Health Check</name>
+      <kind>REST Endpoint</kind>
+      <signature>GET http://localhost:11434/api/tags → 200 OK</signature>
+      <path>External - Ollama service</path>
+      <usage>Installation script and tests verify service is running</usage>
+    </interface>
+    <interface>
+      <name>Ollama Model Management</name>
+      <kind>CLI Command</kind>
+      <signature>
+ollama pull phi3.5:mini  # Download model
+ollama list              # List installed models
+      </signature>
+      <path>External - Ollama CLI</path>
+      <usage>Installation script and tests verify model availability</usage>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Use pytest framework (established in Epic 1, Story 1.1). Follow Story 2.5 patterns: comprehensive testing with 100% pass rate, HTML report generation via pytest-html, benchmark reporting for performance validation. All tests must be fully automated and repeatable. Use Loguru for structured logging in tests. Generate benchmark report (latency distribution) similar to Story 2.5's evaluation report.
+    </standards>
+    <locations>
+      <location>tests/test_ollama_setup.py</location>
+      <pattern>tests/*.py for unit tests</pattern>
+    </locations>
+    <ideas>
+      <test ac="AC-3.0.1" idea="test_ollama_service_running() - Execute HTTP GET to localhost:11434/api/tags, assert 200 response" />
+      <test ac="AC-3.0.2" idea="test_phi35_model_loaded() - Run 'ollama list' command, parse output, assert 'phi3.5:mini' present" />
+      <test ac="AC-3.0.3" idea="test_inference_latency() - Run 10 inference calls with sample prompts, measure latency, calculate p90 and average, assert p90 &lt;300ms and avg &lt;200ms, generate benchmark report with latency distribution" />
+      <test ac="AC-3.0.4" idea="test_json_output_parsing() - Run 100 inference calls with structured output prompts, attempt JSON parsing on each response, count successes, assert success rate >95%, log common parsing errors" />
+      <test ac="AC-3.0.5" idea="Manual verification - Check README.md contains Ollama setup section, verify docs/ollama_setup_guide.md exists with OS-specific instructions and troubleshooting guide" />
+    </ideas>
+  </tests>
+</story-context>

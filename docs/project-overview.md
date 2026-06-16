@@ -1,0 +1,143 @@
+# LLM_ROBOT_2 - Project Overview
+
+**Generated:** 2025-12-16
+**Workflow:** document-project (Deep Scan)
+**Status:** Active Development
+
+---
+
+## Executive Summary
+
+LLM_ROBOT_2 is a production-ready robot control platform that combines CrewAI multi-agent systems, reactive control, and web-based natural language interfaces for intelligent robot operations. The system enables natural language mission commands (Korean/English) through a sophisticated multi-agent AI architecture.
+
+## Project Classification
+
+| Attribute | Value |
+|-----------|-------|
+| **Project Type** | Backend (Python) with Web API |
+| **Repository Type** | Monolith |
+| **Primary Language** | Python 3.10+ |
+| **Primary Framework** | FastAPI, CrewAI |
+| **Domain** | Robotics / AI Control System |
+| **Architecture Pattern** | Multi-Agent System + Service API |
+
+## Key Features
+
+- **Multi-Agent Control System**: CrewAI-powered Planner, Actor, and Verifier agents
+- **Hybrid Reactive Controller**: Real-time obstacle avoidance with Ollama LLM integration
+- **Web Control Interface**: FastAPI + WebSocket for remote robot control
+- **Real-time Monitoring**: 10Hz status broadcasting with live sensor data
+- **Safety Constraints**: Automated safety checks and failure recovery
+- **RAG System**: ChromaDB-powered knowledge base for context-aware decision making
+- **Failure Recovery**: Intelligent replanning on mission failures
+
+## Technology Stack
+
+| Category | Technology | Version | Purpose |
+|----------|------------|---------|---------|
+| **AI/ML** | CrewAI | >=0.1.0 | Multi-agent orchestration |
+| **AI/ML** | OpenAI GPT-4o | - | Planner/Actor LLM |
+| **AI/ML** | Ollama (tinyllama) | - | Local reactive decisions |
+| **AI/ML** | LangChain | >=0.1.0 | LLM integration framework |
+| **Web** | FastAPI | >=0.104.0 | REST API server |
+| **Web** | WebSocket | >=12.0 | Real-time communication |
+| **Data** | Pydantic | >=2.0.0 | Data validation |
+| **Data** | ChromaDB | >=0.4.0 | Vector database (RAG) |
+| **Simulation** | Webots | R2023b+ | Robot simulation |
+| **Testing** | pytest | >=7.4.0 | Test framework |
+| **Logging** | loguru | >=0.7.0 | Structured logging |
+
+## Architecture Overview
+
+```
+┌─────────────────┐
+│   Web Browser   │ ← User enters natural language command
+└────────┬────────┘
+         │ WebSocket (/ws/control)
+         ▼
+┌────────────────────────────────────────┐
+│   FastAPI Web Server (Story 3.2)      │
+│  - REST API (/api/mission, /api/status)│
+│  - WebSocket (10Hz status broadcast)   │
+└────────┬───────────────────────────────┘
+         │
+         ▼
+┌────────────────────────────────────────┐
+│   Mission Orchestrator                 │
+│  - Coordinates agent workflow          │
+│  - Manages mission lifecycle           │
+│  - Integrates reactive controller      │
+└────────┬───────────────────────────────┘
+         │
+    ┌────┴────┬────────────┬──────────┐
+    ▼         ▼            ▼          ▼
+┌────────┐ ┌────────┐ ┌──────────┐ ┌────────────┐
+│Planner │ │ Actor  │ │ Verifier │ │  Reactive  │
+│ Agent  │ │ Agent  │ │  Agent   │ │ Controller │
+└────┬───┘ └───┬────┘ └────┬─────┘ └─────┬──────┘
+     │         │           │             │
+     │    ┌────┴────┐      │             │
+     │    ▼         ▼      ▼             ▼
+     │  Webots  ChromaDB  Safety      Ollama
+     │  Robot     RAG    Constraints  (tinyllama)
+     └─────────────────────────────────────┘
+```
+
+## Epic Summary
+
+### Epic 1: Foundation & Core Multi-Agent System ✅
+- 7 stories completed
+- CrewAI agents (Planner, Actor, Verifier)
+- Webots integration
+- Pydantic schemas
+- 100+ tests passing
+
+### Epic 2: Advanced Features, Safety & Evaluation ✅
+- 5 stories completed
+- ChromaDB RAG system
+- Multi-sensor integration
+- Safety constraints
+- Failure recovery
+- Monitoring & evaluation
+
+### Epic 3: Real-time Control & Web Interface 🚧
+- Story 3.0: Ollama Setup & Validation ✅
+- Story 3.1: Hybrid Reactive Controller ✅
+- Story 3.2: FastAPI Web Control Server ✅
+- Story 3.3: Environment-Aware Planning ✅
+- Story 3.5: Integration Testing ✅
+- Story 3.6: Production Fixes ✅
+- Story 3.7: Architectural Refactoring ✅
+
+## Quick Start
+
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Set up environment
+cp .env.template .env
+# Edit .env with OPENAI_API_KEY
+
+# 3. Install Ollama and pull tinyllama
+ollama pull tinyllama
+
+# 4. Start web server
+uvicorn src.web.server:app --reload --host 127.0.0.1 --port 8000
+
+# 5. Open browser
+# http://localhost:8000
+```
+
+## Related Documentation
+
+- [Source Tree Analysis](./source-tree-analysis.md)
+- [API Contracts](./api-contracts.md)
+- [Data Models](./data-models.md)
+- [Development Guide](./development-guide.md)
+- [Architecture (Detailed)](./architecture.md)
+- [Epic Definitions](./epics.md)
+
+---
+
+*Generated by BMad Document Project Workflow*

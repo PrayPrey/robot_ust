@@ -1,0 +1,293 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>3</epicId>
+    <storyId>3.2</storyId>
+    <title>FastAPI Web Control Server</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-03</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/3-2-fastapi-web-server.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>user</asA>
+    <iWant>to control the robot through a web browser using natural language commands and view real-time status updates</iWant>
+    <soThat>I can operate the robot remotely from anywhere without direct access to the simulation environment</soThat>
+    <tasks>
+      - Task 1: Setup FastAPI Project Structure (7 subtasks)
+      - Task 2: Implement Pydantic Request/Response Schemas (6 subtasks)
+      - Task 3: Implement WebSocket Connection Manager (6 subtasks)
+      - Task 4: Implement WebSocket Endpoints (8 subtasks)
+      - Task 5: Implement REST API Endpoints (6 subtasks)
+      - Task 6: Integrate Orchestrator with Async Execution (6 subtasks)
+      - Task 7: Create Basic Web UI (9 subtasks)
+      - Task 8: Implement Real-time Status Broadcasting (7 subtasks)
+      - Task 9: Documentation - README Update (7 subtasks)
+      - Task 10: Documentation - Deployment Guide (6 subtasks)
+      - Task 11: Environment Configuration (8 subtasks)
+      - Task 12: Testing - Unit Tests (9 subtasks)
+      - Task 13: Testing - Integration Tests (6 subtasks)
+      - Task 14: Testing - E2E Tests (8 subtasks)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">
+      <title>FastAPI WebSocket Server</title>
+      <description>/ws/control endpoint - Bidirectional real-time communication, Natural language command reception, MissionCommand creation, Orchestrator.execute_mission() execution</description>
+      <test>WebSocket connection test, command parsing validation</test>
+    </criterion>
+    <criterion id="2">
+      <title>Real-time Status Broadcasting</title>
+      <description>Robot position (x, y, z) - 10Hz updates (every 100ms), Sensor data (lidar_min, camera stream availability), Mission state (planning/executing/verifying), Reactive intervention notifications</description>
+      <test>WebSocket message frequency validation, data format validation</test>
+    </criterion>
+    <criterion id="3">
+      <title>Basic Web UI (HTML/JavaScript)</title>
+      <description>Natural language input form, Status display panel (position, sensors, logs), Real-time update rendering (WebSocket client), Mission result display</description>
+      <test>UI functional testing, WebSocket integration testing</test>
+    </criterion>
+    <criterion id="4">
+      <title>Orchestrator Integration</title>
+      <description>Async execution (asyncio.to_thread for blocking orchestrator calls), Background mission execution with status streaming, Error handling and client notification, Graceful connection loss handling</description>
+      <test>Async execution test, error propagation test</test>
+    </criterion>
+    <criterion id="5">
+      <title>API Documentation</title>
+      <description>FastAPI auto-generated docs (/docs), WebSocket message format specification, Request/Response schemas documented</description>
+      <test>Swagger UI accessible, all endpoints documented</test>
+    </criterion>
+    <criterion id="6">
+      <title>Web Server Installation and Usage Documentation</title>
+      <description>README.md web server section with installation guide, FastAPI, uvicorn, websockets package requirements, Usage examples (server startup, web UI access, command examples), WebSocket protocol documentation</description>
+      <test>Documentation completeness check</test>
+    </criterion>
+    <criterion id="7">
+      <title>Deployment Script and Configuration</title>
+      <description>Production deployment script (deploy.sh or docker-compose.yml), .env.template file with environment variable definitions, Deployment guide (port settings, firewall, SSL notes)</description>
+      <test>Deployment script validation, configuration template verification</test>
+    </criterion>
+    <criterion id="8">
+      <title>Environment Variable Documentation</title>
+      <description>.env.template file created with all required variables (OPENAI_API_KEY, WEBOTS_PATH, SERVER_PORT, SERVER_HOST), Environment-specific examples (development/production)</description>
+      <test>Template completeness, variable usage documentation</test>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>LLM_ROBOT_2 Architecture</title>
+        <section>Epic 3: Advanced Real-time Control & Web Interface - Section 11.4 (lines 900-980)</section>
+        <snippet>FastAPI Web Control Server architecture with ConnectionManager class for WebSocket management, real-time status broadcasting pattern (10Hz), async mission execution using asyncio.to_thread(), and CORS configuration for React frontend compatibility.</snippet>
+      </doc>
+      <doc>
+        <path>docs/tech-spec-epic-3.md</path>
+        <title>Epic 3 Technical Specification</title>
+        <section>APIs and Interfaces - FastAPI Endpoints (lines 142-213)</section>
+        <snippet>REST endpoints (POST /api/mission, GET /api/status, GET /health), WebSocket endpoints (/ws/robot-status, /ws/control), Pydantic schemas (MissionRequest, MissionResponse, SystemStatus), performance targets (WebSocket latency <50ms, REST API <500ms, 10Hz broadcast).</snippet>
+      </doc>
+      <doc>
+        <path>docs/tech-spec-epic-3.md</path>
+        <title>Epic 3 Technical Specification</title>
+        <section>Workflows and Sequencing - Workflow 2: Web-Based Mission Control (lines 252-270)</section>
+        <snippet>Complete web control flow: User types command → WebSocket to /ws/control → FastAPI parses MissionRequest → orchestrator.execute_mission() async → standard Planner/Actor/Verifier flow → WebSocket broadcasts MissionResponse → Browser updates UI.</snippet>
+      </doc>
+      <doc>
+        <path>docs/tech-spec-epic-3.md</path>
+        <title>Epic 3 Technical Specification</title>
+        <section>Security (lines 347-386)</section>
+        <snippet>Development-only security: localhost binding, CORS localhost-only, no SSL/TLS, no authentication. Input validation via Pydantic (command max 500 chars, rate limiting 10 req/sec). Known vulnerabilities accepted for development (unauthenticated WebSocket, no DoS protection).</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic 3 Story Definitions</title>
+        <section>Story 3.2: FastAPI Web Control Server (lines 547-630)</section>
+        <snippet>Implementation details: Create src/web/server.py (~400 lines), src/web/schemas.py (~100 lines), src/web/templates/index.html (~200 lines), .env.template, deployment scripts. Modify src/orchestrator.py (optional get_system_status()), README.md, requirements.txt.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/3-1-hybrid-reactive-controller.md</path>
+        <title>Story 3.1: Hybrid Reactive Controller</title>
+        <section>Completion Notes (lines 436-523)</section>
+        <snippet>Reactive controller ready at src/reactive/hybrid_controller.py (441 lines), RobotState.reactive_log field available (line 241-255), reactive interventions auto-populated during mission execution. Integration: Use RobotState.reactive_log for status broadcasting, count interventions by type (CRITICAL/MODERATE/NORMAL).</snippet>
+      </doc>
+      <doc>
+        <path>pytest.ini</path>
+        <title>pytest Configuration</title>
+        <section>Full file</section>
+        <snippet>pythonpath = . (enables src imports), testpaths = tests, addopts = -v --tb=short --strict-markers --disable-warnings, asyncio_mode = auto (for async tests). Test discovery: test_*.py files, Test* classes, test_* functions.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>src/orchestrator.py</path>
+        <kind>service</kind>
+        <symbol>MissionOrchestrator</symbol>
+        <lines>19-100</lines>
+        <reason>Core orchestrator class that web server must integrate with. Provides execute_mission(MissionCommand) method (blocking) that must be wrapped with asyncio.to_thread() for async execution. Initializes Planner/Actor/Verifier agents.</reason>
+      </artifact>
+      <artifact>
+        <path>src/orchestrator.py</path>
+        <kind>service</kind>
+        <symbol>MissionOrchestrator.execute_mission</symbol>
+        <lines>100+</lines>
+        <reason>Primary method for mission execution. Returns Dict with keys: success (bool), message (str), execution_log (list), robot_state (RobotState). Web server must call this asynchronously and extract reactive_log from robot_state for status broadcasting.</reason>
+      </artifact>
+      <artifact>
+        <path>src/schemas/robot_state.py</path>
+        <kind>schema</kind>
+        <symbol>RobotState</symbol>
+        <lines>241-255</lines>
+        <reason>RobotState Pydantic model includes reactive_log field (List[Dict[str, Any]]) added in Story 3.1. Web server should read this field to summarize reactive interventions for SystemStatus broadcasting.</reason>
+      </artifact>
+      <artifact>
+        <path>src/schemas/__init__.py</path>
+        <kind>schema</kind>
+        <symbol>MissionCommand</symbol>
+        <lines>1+</lines>
+        <reason>Existing Pydantic schema for mission commands. Web server must convert MissionRequest (from WebSocket) to MissionCommand format before calling orchestrator.execute_mission(). Fields: command (str), language (str, default "ko").</reason>
+      </artifact>
+      <artifact>
+        <path>src/reactive/hybrid_controller.py</path>
+        <kind>service</kind>
+        <symbol>HybridReactiveController</symbol>
+        <lines>1-441</lines>
+        <reason>Reactive controller from Story 3.1. Web server does NOT call this directly - it's integrated within ActorAgent. However, reactive_log entries created by this controller should be surfaced in status broadcasts.</reason>
+      </artifact>
+      <artifact>
+        <path>tests/test_reactive_controller.py</path>
+        <kind>test</kind>
+        <symbol>TestHybridReactiveController</symbol>
+        <lines>1-468</lines>
+        <reason>Reference for testing patterns: mocking Ollama client, async test structure, performance validation (<10ms checks). Story 3.2 tests should follow similar patterns for WebSocket and FastAPI testing.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <package name="fastapi" version=">=0.104.0" />
+        <package name="uvicorn" version=">=0.24.0" extras="[standard]" />
+        <package name="websockets" version=">=12.0" />
+        <package name="python-socketio" version=">=5.10.0" />
+        <package name="httpx" version=">=0.25.0" note="For testing WebSocket clients" />
+        <package name="pydantic" version=">=2.0.0" note="Already installed, used for schema validation" />
+        <package name="python-dotenv" version=">=1.0.0" note="Already installed, for .env loading" />
+        <package name="pytest" version=">=7.4.0" note="Already installed" />
+        <package name="pytest-asyncio" version=">=0.21.0" note="Already installed, needed for async tests" />
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>
+      <title>Multi-Agent Architecture Preservation</title>
+      <description>Web server is an input/output interface layer only. DO NOT modify core Planner/Actor/Verifier agents. Orchestrator.execute_mission() is the single entry point for mission execution.</description>
+    </constraint>
+    <constraint>
+      <title>Async Execution Pattern</title>
+      <description>orchestrator.execute_mission() is a BLOCKING operation. MUST wrap with asyncio.to_thread() for async execution in FastAPI endpoints to avoid blocking the event loop. Example: result = await asyncio.to_thread(orchestrator.execute_mission, mission)</description>
+    </constraint>
+    <constraint>
+      <title>No Direct Reactive Controller Access</title>
+      <description>Web server MUST NOT call HybridReactiveController directly. Reactive interventions are automatically logged in RobotState.reactive_log during mission execution. Read reactive_log from mission results only.</description>
+    </constraint>
+    <constraint>
+      <title>Security - Development Only</title>
+      <description>This is a development server. Bind to localhost:8000 by default. CORS allows localhost only. No SSL/TLS required. No authentication/authorization implemented. Document production security requirements for future deployment.</description>
+    </constraint>
+    <constraint>
+      <title>Performance Targets</title>
+      <description>WebSocket message latency <50ms (server to client). REST API response <500ms for /api/mission (async). Status broadcast frequency 10Hz (every 100ms). Support 10+ concurrent WebSocket connections.</description>
+    </constraint>
+    <constraint>
+      <title>Testing Standards</title>
+      <description>Unit tests: Mock Orchestrator for isolated API testing. Integration tests: Test WebSocket → Orchestrator → Response flow with real orchestrator. E2E tests: Full flow including Planner/Actor/Verifier execution. Target >80% code coverage for src/web/.</description>
+    </constraint>
+    <constraint>
+      <title>Project Structure</title>
+      <description>Create src/web/ package with __init__.py, server.py, schemas.py. Create src/web/templates/ for HTML files. Follow existing project structure patterns from Epic 1-2. Tests in tests/test_web_api.py, tests/integration/test_web_integration.py, tests/e2e/test_web_e2e.py.</description>
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>MissionOrchestrator.execute_mission</name>
+      <kind>Python method</kind>
+      <signature>def execute_mission(self, mission: MissionCommand, max_retries: int = 3) -> Dict[str, Any]</signature>
+      <path>src/orchestrator.py</path>
+      <description>BLOCKING method that executes mission through Planner/Actor/Verifier flow. Returns dict with keys: success, message, execution_log, robot_state. Must be called via asyncio.to_thread() in FastAPI. Extract reactive_log from robot_state for status broadcasting.</description>
+    </interface>
+    <interface>
+      <name>POST /api/mission</name>
+      <kind>REST endpoint</kind>
+      <signature>POST /api/mission, Request Body: MissionRequest, Response: MissionResponse</signature>
+      <path>src/web/server.py</path>
+      <description>Execute mission command asynchronously. Request: {command: str, language: str, priority: int}. Response: {success: bool, message: str, duration_seconds: float, final_position: tuple, reactive_events: list}. Implementation: Parse request → create MissionCommand → await asyncio.to_thread(orchestrator.execute_mission) → broadcast result via WebSocket → return response.</description>
+    </interface>
+    <interface>
+      <name>GET /api/status</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /api/status, Response: SystemStatus</signature>
+      <path>src/web/server.py</path>
+      <description>Get current robot status. Response: {position: tuple, sensors: dict, mission_state: str, reactive_log_summary: dict}. Implementation: Query orchestrator for current robot state → extract position, sensors, mission state → summarize reactive_log by intervention type → return SystemStatus.</description>
+    </interface>
+    <interface>
+      <name>WebSocket /ws/control</name>
+      <kind>WebSocket endpoint</kind>
+      <signature>WebSocket /ws/control, Client → Server: MissionRequest JSON, Server → Client: MissionResponse JSON</signature>
+      <path>src/web/server.py</path>
+      <description>Bidirectional WebSocket for command submission and result streaming. Client sends MissionRequest → Server parses and executes mission → Server sends MissionResponse on completion. Handle WebSocketDisconnect exceptions gracefully.</description>
+    </interface>
+    <interface>
+      <name>WebSocket /ws/robot-status</name>
+      <kind>WebSocket endpoint</kind>
+      <signature>WebSocket /ws/robot-status, Server → Client: SystemStatus JSON (10Hz broadcast)</signature>
+      <path>src/web/server.py</path>
+      <description>Server-to-client status broadcast. Background task sends SystemStatus JSON every 100ms. Includes: position, sensors, mission state, reactive_log_summary. Client receives real-time updates during mission execution. Handle WebSocketDisconnect gracefully.</description>
+    </interface>
+    <interface>
+      <name>ConnectionManager</name>
+      <kind>Python class</kind>
+      <signature>class ConnectionManager with methods: connect(websocket), disconnect(websocket), broadcast(message)</signature>
+      <path>src/web/server.py</path>
+      <description>Manages active WebSocket connections. connect() accepts new WebSocket and adds to active_connections list. disconnect() removes WebSocket from list. broadcast() sends JSON message to all connected clients. Used for real-time status broadcasting to multiple clients.</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      pytest framework with asyncio support (pytest-asyncio). Unit tests mock Orchestrator and test FastAPI endpoints in isolation. Integration tests use TestClient from fastapi.testclient for WebSocket and REST API testing. E2E tests start FastAPI server in test process and validate full mission execution flow. Use httpx for WebSocket client testing. Target >80% code coverage for src/web/. Follow existing test patterns from tests/test_reactive_controller.py (mocking, fixtures, async tests).
+    </standards>
+    <locations>
+      tests/test_web_api.py (unit tests)
+      tests/integration/test_web_integration.py (integration tests)
+      tests/e2e/test_web_e2e.py (end-to-end tests)
+    </locations>
+    <ideas>
+      <idea ac="1">
+        Unit Test: Test FastAPI app initialization with CORS middleware. Test /ws/control WebSocket connection and disconnection. Test MissionRequest parsing and MissionCommand creation (mock orchestrator). Test orchestrator.execute_mission() call via asyncio.to_thread. Test error handling for invalid command format (400 Bad Request).
+      </idea>
+      <idea ac="2">
+        Integration Test: Test real-time status broadcasting frequency (validate 10Hz, 100ms intervals). Test SystemStatus data format (position, sensors, mission_state, reactive_log_summary). Test /ws/robot-status WebSocket stream with real orchestrator. Test concurrent WebSocket connections (simulate 10 clients). Test status updates during mission execution.
+      </idea>
+      <idea ac="3">
+        Unit Test: Test HTML template rendering (serve static files). Test JavaScript WebSocket client connection logic. Integration Test: Test full UI flow (submit command → see status updates → receive result). Test DOM updates with incoming WebSocket messages. Test error message display in UI.
+      </idea>
+      <idea ac="4">
+        Unit Test: Test async execution wrapper (asyncio.to_thread for blocking orchestrator). Test error propagation from orchestrator to WebSocket client. Test WebSocketDisconnect exception handling. Integration Test: Test mission execution continues after client disconnect. Test reactive_log extraction from mission result. Test graceful shutdown on server stop.
+      </idea>
+      <idea ac="5">
+        Unit Test: Test FastAPI auto-docs accessibility (GET /docs returns 200). Test Swagger UI includes all endpoints (/api/mission, /api/status, /health, /ws/control, /ws/robot-status). Test Pydantic schema documentation in Swagger UI (MissionRequest, MissionResponse, SystemStatus). Test OpenAPI JSON generation.
+      </idea>
+      <idea ac="6">
+        Documentation Test: Verify README.md includes "Web Control Server" section. Verify installation instructions (pip install fastapi uvicorn websockets). Verify usage instructions (uvicorn command, web UI URL). Verify WebSocket protocol documentation (message formats, event types). Verify troubleshooting section exists.
+      </idea>
+      <idea ac="7">
+        Documentation Test: Verify deploy_web_server.sh script exists and is executable. Verify script includes port configuration, uvicorn workers setup, production considerations. Verify .env.template includes SERVER_PORT, SERVER_HOST. Verify deployment guide documents firewall requirements, SSL/TLS notes.
+      </idea>
+      <idea ac="8">
+        Documentation Test: Verify .env.template file exists with required variables (OPENAI_API_KEY, WEBOTS_PATH, SERVER_PORT, SERVER_HOST). Verify each variable has descriptive comment. Verify .env.example exists with sample development values. Verify .gitignore excludes .env file.
+      </idea>
+    </ideas>
+  </tests>
+</story-context>

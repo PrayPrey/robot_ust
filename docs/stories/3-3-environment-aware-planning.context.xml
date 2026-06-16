@@ -1,0 +1,425 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>3</epicId>
+    <storyId>3</storyId>
+    <title>Environment-Aware Planning</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-03</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/3-3-environment-aware-planning.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Planner Agent</asA>
+    <iWant>to automatically detect environmental conditions from sensor data and retrieve environment-specific constraints from the RAG system</iWant>
+    <soThat>I can generate appropriate mission plans adapted to different environments (indoor, outdoor, warehouse, hospital)</soThat>
+    <tasks>
+- Task 1: Create EnvironmentDetector Class (AC: #1)
+  - 1.1: Create `src/utils/environment_detector.py` module
+  - 1.2: Define EnvironmentClassification Pydantic model
+  - 1.3: Implement `detect_environment(sensor_data)` method
+  - 1.4: Implement GPS signal strength rule (>0.8 outdoor, <0.3 indoor)
+  - 1.5: Implement Lidar average distance rule (>5m warehouse, <3m indoor)
+  - 1.6: Implement camera brightness rule (natural vs artificial light)
+  - 1.7: Implement confidence scoring and "unknown" fallback
+  - 1.8: Add comprehensive docstrings and type hints
+
+- Task 2: Extend RAG Data with Environment Metadata (AC: #2)
+  - 2.1: Read existing `src/rag/data/environment_constraints.json`
+  - 2.2: Add `environment_type` field to all existing constraints
+  - 2.3: Create indoor-specific constraints (GPS limitation, ceiling detection)
+  - 2.4: Create outdoor-specific constraints (sunlight, weather, GPS reliance)
+  - 2.5: Create warehouse-specific constraints (large spaces, high ceilings)
+  - 2.6: Create hospital-specific constraints (noise limits, smooth motion)
+  - 2.7: Validate JSON schema after modifications
+  - 2.8: Update RAG data loading to handle new metadata field
+
+- Task 3: Integrate EnvironmentDetector with PlannerAgent (AC: #3)
+  - 3.1: Import EnvironmentDetector in `src/agents/planner_agent.py`
+  - 3.2: Initialize EnvironmentDetector in PlannerAgent.__init__()
+  - 3.3: Modify `_retrieve_rag_context()` to call detect_environment() first
+  - 3.4: Extract detected environment_type from EnvironmentClassification
+  - 3.5: Pass `where={"environment_type": env}` filter to ChromaDB query
+  - 3.6: Handle "unknown" environment (fallback to all constraints)
+  - 3.7: Log environment detection result for observability
+  - 3.8: Update method docstring with new behavior
+
+- Task 4: Verify Backward Compatibility (AC: #4)
+  - 4.1: Verify RobotKnowledgeBase class unchanged (read file, check structure)
+  - 4.2: Verify ChromaDB collection list (no new collections created)
+  - 4.3: Test existing RAG queries with new metadata (should work seamlessly)
+  - 4.4: Run Epic 2 RAG tests (pytest tests/test_rag.py)
+  - 4.5: Verify all 14/14 Epic 2.1 tests pass
+
+- Task 5: Unit Tests - EnvironmentDetector (AC: #5)
+  - 5.1: Create `tests/unit/test_environment_detector.py`
+  - 5.2: Test detect_indoor() - GPS=0.2, Lidar=2m → "indoor"
+  - 5.3: Test detect_outdoor() - GPS=0.9, Lidar=10m → "outdoor"
+  - 5.4: Test detect_warehouse() - GPS=0.1, Lidar=8m → "warehouse"
+  - 5.5: Test detect_hospital() - GPS=0.3, Lidar=3m, specific patterns → "hospital"
+  - 5.6: Test detect_unknown() - Conflicting signals → "unknown"
+  - 5.7: Test confidence scoring (0.0-1.0 range)
+  - 5.8: Test edge cases (missing sensors, null values)
+
+- Task 6: Integration Tests - RAG Filtering (AC: #5)
+  - 6.1: Create `tests/integration/test_environment_rag_filtering.py`
+  - 6.2: Test Planner with indoor environment → only indoor constraints retrieved
+  - 6.3: Test Planner with outdoor environment → only outdoor constraints retrieved
+  - 6.4: Test Planner with warehouse environment → only warehouse constraints retrieved
+  - 6.5: Test Planner with unknown environment → all constraints retrieved (fallback)
+  - 6.6: Verify where filter works correctly with ChromaDB
+  - 6.7: Test mission planning produces different results based on environment
+
+- Task 7: Integration Tests - End-to-End Environment-Aware Planning (AC: #5)
+  - 7.1: Create `tests/integration/test_e2e_environment_planning.py`
+  - 7.2: Test E2E: Indoor mission (GPS unavailable, uses Lidar/IMU)
+  - 7.3: Test E2E: Outdoor mission (GPS-based navigation)
+  - 7.4: Test E2E: Warehouse mission (large space, optimized for efficiency)
+  - 7.5: Verify reactive controller + environment detection work together
+  - 7.6: Verify mission completion with environment-appropriate plans
+
+- Task 8: Documentation Updates (AC: #1-5)
+  - 8.1: Update README.md with Environment-Aware Planning section
+  - 8.2: Document EnvironmentDetector API and classification rules
+  - 8.3: Document environment metadata schema
+  - 8.4: Add usage examples (how to add new environments)
+  - 8.5: Update Epic 3 architecture documentation
+  - 8.6: Create environment classification flowchart (optional)
+</tasks>
+  </story>
+
+  <acceptanceCriteria>
+1. **Rule-Based Environment Detection**
+   - GPS signal strength classifies outdoor (>0.8) vs indoor (<0.3)
+   - Lidar average distance classifies warehouse (>5m) vs indoor (<3m)
+   - Camera brightness differentiates outdoor (natural light) vs indoor (artificial)
+   - Result: "indoor" | "outdoor" | "warehouse" | "hospital" | "unknown"
+   - Test: 4 environment scenarios + unknown case validation
+
+2. **RAG System Extension (Metadata-Only)**
+   - Update `src/rag/data/environment_constraints.json` with `environment_type` field
+   - Add environment-specific constraints (indoor/outdoor/warehouse/hospital)
+   - Example: `{"id": "const_indoor_gps", "environment_type": "indoor", "description": "..."}`
+   - Test: Verify metadata added without creating new collections
+
+3. **Environment-Filtered RAG Queries**
+   - Modify `PlannerAgent._retrieve_rag_context()` to detect environment first
+   - Use ChromaDB `where` filter: `search_constraints(query, where={"environment_type": env})`
+   - Retrieve only environment-relevant constraints
+   - Test: Verify filtered query returns correct constraint subset
+
+4. **Backward Compatibility**
+   - `RobotKnowledgeBase` class remains unchanged
+   - No new ChromaDB collections created
+   - Existing RAG queries continue working (metadata extension only)
+   - Test: Run Epic 2 RAG tests, verify all pass
+
+5. **Comprehensive Testing**
+   - Unit tests: Environment detection logic (4 environments + unknown)
+   - Integration tests: Environment filtering + Planner integration
+   - Test: Planner generates different plans based on detected environment
+</acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <!-- Primary authoritative source for Story 3.3 requirements -->
+      <doc>
+        <path>docs/tech-spec-epic-3.md</path>
+        <title>Epic 3 Technical Specification</title>
+        <section>Story 3.3: Environment-Aware Planning (AC-3.3.1 to AC-3.3.5)</section>
+        <snippet>Defines environment detection rules (GPS/Lidar/Camera), RAG metadata extension schema, ChromaDB where filter integration, and comprehensive testing requirements. See lines 656-667 for ACs, lines 272-292 for Workflow 3.</snippet>
+      </doc>
+
+      <!-- Detailed story requirements and implementation guidance -->
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic 3: Advanced Real-time Control & Web Interface</title>
+        <section>Story 3.3: Environment-Aware Planning</section>
+        <snippet>User story definition, 5 acceptance criteria, files to create (environment_detector.py, test files), files to modify (planner_agent.py, environment_constraints.json). Lines 633-703.</snippet>
+      </doc>
+
+      <!-- Architecture patterns and RAG system design -->
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>LLM_ROBOT_2 System Architecture</title>
+        <section>RAG System & Multi-Agent Coordination</section>
+        <snippet>Describes existing RAG system (ChromaDB), Planner Agent architecture, and sensor data flow. Environment detection extends existing patterns without structural changes.</snippet>
+      </doc>
+
+      <!-- Related story for RAG system baseline -->
+      <doc>
+        <path>docs/stories/2-1-chromadb-rag.md</path>
+        <title>Story 2.1: ChromaDB RAG Integration</title>
+        <section>RAG Implementation & Testing</section>
+        <snippet>Baseline RAG system with RobotKnowledgeBase class, search_constraints() method, and constraint metadata structure. Story 3.3 extends with environment_type field.</snippet>
+      </doc>
+
+      <!-- Related story for sensor integration baseline -->
+      <doc>
+        <path>docs/stories/2-2-multi-sensor-integration.md</path>
+        <title>Story 2.2: Multi-Sensor Integration</title>
+        <section>SensorData Schema & Integration</section>
+        <snippet>Defines SensorData Pydantic model with GPS, Lidar, and Camera sensors. Environment detection uses these established sensor interfaces.</snippet>
+      </doc>
+
+      <!-- Testing standards for Epic 3 -->
+      <doc>
+        <path>docs/stories/2-0-test-infrastructure.md</path>
+        <title>Story 2.0: Test Infrastructure</title>
+        <section>pytest Configuration & Standards</section>
+        <snippet>Established pytest framework, fixtures, and test organization patterns. Story 3.3 follows same unit/integration test structure.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <!-- Existing Planner Agent to be modified (Task 3) -->
+      <artifact>
+        <path>src/agents/planner_agent.py</path>
+        <kind>agent</kind>
+        <symbol>PlannerAgent._retrieve_rag_context()</symbol>
+        <lines>TBD - method to be modified</lines>
+        <reason>This method must be extended to call EnvironmentDetector and apply where filter to ChromaDB queries. Single method modification (~10 lines added).</reason>
+      </artifact>
+
+      <!-- Existing RAG knowledge base to be preserved (AC #4) -->
+      <artifact>
+        <path>src/rag/knowledge_base.py</path>
+        <kind>service</kind>
+        <symbol>RobotKnowledgeBase.search_constraints()</symbol>
+        <lines>TBD - existing method interface</lines>
+        <reason>Existing RAG system with search_constraints() method. Must remain unchanged (backward compatibility). Story 3.3 extends usage with where parameter.</reason>
+      </artifact>
+
+      <!-- Existing sensor data schema (reused for environment detection) -->
+      <artifact>
+        <path>src/schemas/robot_state.py</path>
+        <kind>schema</kind>
+        <symbol>SensorData</symbol>
+        <lines>TBD - Pydantic model</lines>
+        <reason>Defines GPS, Lidar, Camera sensor interfaces. EnvironmentDetector.detect_environment() accepts SensorData as input parameter.</reason>
+      </artifact>
+
+      <!-- RAG constraint data file to be extended (Task 2) -->
+      <artifact>
+        <path>src/rag/data/environment_constraints.json</path>
+        <kind>data</kind>
+        <symbol>N/A (JSON data file)</symbol>
+        <lines>Full file - all constraints</lines>
+        <reason>Contains existing constraints. Task 2 adds environment_type metadata field to each constraint. New environment-specific constraints will be added.</reason>
+      </artifact>
+
+      <!-- Sensor manager for reference -->
+      <artifact>
+        <path>src/sensors/sensor_manager.py</path>
+        <kind>service</kind>
+        <symbol>SensorManager</symbol>
+        <lines>TBD - sensor collection interface</lines>
+        <reason>Manages GPS, Lidar, Camera sensors. EnvironmentDetector extracts features from SensorData provided by this manager.</reason>
+      </artifact>
+
+      <!-- New utility module to be created (Task 1) -->
+      <artifact>
+        <path>src/utils/environment_detector.py</path>
+        <kind>utility</kind>
+        <symbol>EnvironmentDetector.detect_environment()</symbol>
+        <lines>1-150 (NEW FILE)</lines>
+        <reason>NEW MODULE - Implements rule-based environment classification. Core logic for Story 3.3 AC #1.</reason>
+      </artifact>
+
+      <!-- Existing test infrastructure for reference -->
+      <artifact>
+        <path>tests/conftest.py</path>
+        <kind>test</kind>
+        <symbol>pytest fixtures</symbol>
+        <lines>TBD - existing fixtures</lines>
+        <reason>Established pytest fixtures from Epic 1-2. Story 3.3 tests will reuse mock SensorData fixtures.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <!-- Python ecosystem (requirements.txt) -->
+      <ecosystem name="python">
+        <!-- Core dependencies for Story 3.3 -->
+        <package name="pydantic" version=">=2.0.0">Data validation - EnvironmentClassification model (Task 1.2)</package>
+        <package name="chromadb" version=">=0.4.0">Vector database - RAG system with metadata filtering (Task 2, AC #2)</package>
+        <package name="loguru" version=">=0.7.0">Structured logging - environment detection observability (Task 3.7)</package>
+        <package name="numpy" version=">=1.24.0,<2.0.0">Lidar average calculation, sensor data processing</package>
+        <package name="opencv-python" version=">=4.12.0">Camera brightness analysis for environment detection (Task 1.6)</package>
+
+        <!-- Testing dependencies -->
+        <package name="pytest" version=">=7.4.0">Unit and integration testing framework (Task 5-7)</package>
+        <package name="pytest-asyncio" version=">=0.21.0">Async test support</package>
+        <package name="pytest-cov" version=">=4.1.0">Code coverage measurement (>80% target)</package>
+
+        <!-- Multi-agent system dependencies (existing) -->
+        <package name="crewai" version=">=0.1.0">Planner Agent framework (Task 3)</package>
+        <package name="langchain" version=">=0.1.0">RAG system integration</package>
+
+        <!-- No new dependencies required for Story 3.3 -->
+      </ecosystem>
+
+      <!-- Webots Robot Simulator (external) -->
+      <external name="Webots" version="R2025a">
+        Robot simulation environment with sensor APIs (GPS, Lidar, Camera)
+      </external>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <!-- Architecture constraints from Dev Notes -->
+    <constraint>Extends RAG system with metadata filtering only - no structural changes to RobotKnowledgeBase class (AC #4)</constraint>
+    <constraint>EnvironmentDetector must be a utility module (src/utils/) - does not modify core agents directly</constraint>
+    <constraint>PlannerAgent modification minimal - single method update with backward compatible fallback behavior</constraint>
+    <constraint>Environment detection executes once per mission at planning phase - not during execution</constraint>
+    <constraint>Rule-based classification must be lightweight (<10ms latency requirement)</constraint>
+    <constraint>ChromaDB where filter must work with existing metadata structure - no new collections</constraint>
+    <constraint>Must maintain backward compatibility - all 14/14 Epic 2.1 RAG tests must continue passing</constraint>
+    <constraint>Testing follows Epic 1-2 patterns - pytest, unit/integration structure, >80% code coverage target</constraint>
+    <constraint>Confidence scoring required - return "unknown" if confidence <0.5, fallback to all constraints</constraint>
+    <constraint>Must use existing Pydantic models (SensorData) - no new sensor interfaces</constraint>
+  </constraints>
+
+  <interfaces>
+    <!-- EnvironmentDetector API (NEW - Task 1) -->
+    <interface>
+      <name>EnvironmentDetector.detect_environment()</name>
+      <kind>method</kind>
+      <signature>def detect_environment(self, sensor_data: SensorData) -> EnvironmentClassification</signature>
+      <path>src/utils/environment_detector.py</path>
+      <description>Rule-based environment classification. Takes SensorData, returns EnvironmentClassification with type (indoor/outdoor/warehouse/hospital/unknown), confidence (0.0-1.0), and features dict.</description>
+    </interface>
+
+    <!-- EnvironmentClassification Pydantic Model (NEW - Task 1.2) -->
+    <interface>
+      <name>EnvironmentClassification</name>
+      <kind>pydantic model</kind>
+      <signature>class EnvironmentClassification(BaseModel): environment_type: Literal["indoor", "outdoor", "warehouse", "hospital", "unknown"]; confidence: float; features: Dict[str, Any]</signature>
+      <path>src/utils/environment_detector.py</path>
+      <description>Output model for environment detection. Includes detected environment type, confidence score (0.0-1.0), and extracted features (GPS signal, Lidar avg, ceiling detected, lighting level).</description>
+    </interface>
+
+    <!-- RobotKnowledgeBase.search_constraints() (EXISTING - reused with where filter) -->
+    <interface>
+      <name>RobotKnowledgeBase.search_constraints()</name>
+      <kind>method</kind>
+      <signature>def search_constraints(self, query: str, where: Optional[Dict] = None, top_k: int = 5) -> List[str]</signature>
+      <path>src/rag/knowledge_base.py</path>
+      <description>Existing RAG search method. Story 3.3 uses optional 'where' parameter to filter by environment_type. Example: where={"environment_type": "indoor"}. Method interface unchanged.</description>
+    </interface>
+
+    <!-- PlannerAgent._retrieve_rag_context() (MODIFIED - Task 3.3) -->
+    <interface>
+      <name>PlannerAgent._retrieve_rag_context()</name>
+      <kind>method</kind>
+      <signature>def _retrieve_rag_context(self, mission_command: str) -> List[str]</signature>
+      <path>src/agents/planner_agent.py</path>
+      <description>Modified to call EnvironmentDetector first, then pass where filter to search_constraints(). Fallback to unfiltered search if environment=="unknown" or confidence<0.5.</description>
+    </interface>
+
+    <!-- SensorData (EXISTING - input to EnvironmentDetector) -->
+    <interface>
+      <name>SensorData</name>
+      <kind>pydantic model</kind>
+      <signature>class SensorData(BaseModel): gps: Optional[GPSData]; lidar: Optional[LidarData]; camera: Optional[CameraData]</signature>
+      <path>src/schemas/robot_state.py</path>
+      <description>Existing Pydantic model from Epic 2.2. Contains GPS signal strength, Lidar ranges, Camera brightness. Used as input to EnvironmentDetector.detect_environment().</description>
+    </interface>
+
+    <!-- Environment Constraint JSON Schema (EXTENDED - Task 2) -->
+    <interface>
+      <name>environment_constraints.json schema</name>
+      <kind>data schema</kind>
+      <signature>{"id": str, "description": str, "category": str, "environment_type": str}</signature>
+      <path>src/rag/data/environment_constraints.json</path>
+      <description>JSON array of constraint objects. NEW FIELD: environment_type ("indoor" | "outdoor" | "warehouse" | "hospital"). Existing fields (id, description, category) unchanged.</description>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>
+Test framework: pytest (established in Epic 1-2, Story 2.0)
+Test structure: Unit tests in tests/unit/, Integration tests in tests/integration/
+Coverage target: >80% line coverage for new modules (EnvironmentDetector, PlannerAgent modifications)
+Fixtures: Reuse existing pytest fixtures from tests/conftest.py (mock SensorData, mock RAG responses)
+Test categories: Unit (environment detection logic), Integration (Planner + RAG filtering), E2E (full mission with environment adaptation)
+Regression requirement: All 14/14 Epic 2.1 RAG tests must continue passing (AC #4)
+Performance validation: Environment detection <10ms latency
+Test execution: pytest tests/unit/test_environment_detector.py tests/integration/test_environment_rag_filtering.py -v --cov
+    </standards>
+
+    <locations>
+tests/unit/test_environment_detector.py (NEW - Task 5)
+tests/integration/test_environment_rag_filtering.py (NEW - Task 6)
+tests/integration/test_e2e_environment_planning.py (NEW - Task 7)
+tests/test_rag.py (EXISTING - Epic 2.1 regression tests to verify)
+tests/conftest.py (EXISTING - pytest fixtures for sensor data mocks)
+    </locations>
+
+    <ideas>
+<!-- Unit Tests for EnvironmentDetector (AC #1, Task 5) -->
+<test id="AC-1.1" category="unit">
+  Test detect_indoor(): Mock SensorData with GPS=0.2, Lidar_avg=2m, ceiling=True → assert environment_type=="indoor", confidence>0.8
+</test>
+<test id="AC-1.2" category="unit">
+  Test detect_outdoor(): Mock SensorData with GPS=0.9, Lidar_avg=10m, ceiling=False → assert environment_type=="outdoor", confidence>0.8
+</test>
+<test id="AC-1.3" category="unit">
+  Test detect_warehouse(): Mock SensorData with GPS=0.1, Lidar_avg=8m, ceiling=True → assert environment_type=="warehouse", confidence>0.8
+</test>
+<test id="AC-1.4" category="unit">
+  Test detect_hospital(): Mock SensorData with GPS=0.3, Lidar_avg=3m, specific patterns → assert environment_type=="hospital"
+</test>
+<test id="AC-1.5" category="unit">
+  Test detect_unknown(): Mock conflicting SensorData (GPS high, ceiling detected) → assert environment_type=="unknown", confidence<0.5
+</test>
+<test id="AC-1.6" category="unit">
+  Test confidence_scoring(): Verify confidence ranges 0.0-1.0, high confidence (>0.8) when rules agree, low (<0.5) for conflicts
+</test>
+<test id="AC-1.7" category="unit">
+  Test edge_cases(): Missing GPS, null Lidar, invalid Camera → handle gracefully, return "unknown"
+</test>
+
+<!-- Integration Tests for RAG Filtering (AC #3, Task 6) -->
+<test id="AC-3.1" category="integration">
+  Test PlannerAgent with indoor environment: Mock environment detection → verify only indoor constraints retrieved via where filter
+</test>
+<test id="AC-3.2" category="integration">
+  Test PlannerAgent with outdoor environment: Verify only outdoor constraints retrieved
+</test>
+<test id="AC-3.3" category="integration">
+  Test PlannerAgent with warehouse environment: Verify only warehouse constraints retrieved
+</test>
+<test id="AC-3.4" category="integration">
+  Test PlannerAgent with unknown environment: Verify fallback to all constraints (no where filter applied)
+</test>
+<test id="AC-3.5" category="integration">
+  Test ChromaDB where filter correctness: Verify search_constraints(where={"environment_type": "indoor"}) returns correct subset
+</test>
+<test id="AC-3.6" category="integration">
+  Test mission planning produces different results: Compare plan for indoor vs outdoor mission → assert different constraints used
+</test>
+
+<!-- End-to-End Tests (AC #5, Task 7) -->
+<test id="AC-5.1" category="e2e">
+  Test indoor mission E2E: Full mission with indoor environment → verify GPS not used, Lidar/IMU navigation, mission success
+</test>
+<test id="AC-5.2" category="e2e">
+  Test outdoor mission E2E: Full mission with outdoor environment → verify GPS-based navigation, mission success
+</test>
+<test id="AC-5.3" category="e2e">
+  Test warehouse mission E2E: Full mission with warehouse environment → verify large space optimization, higher speed allowed
+</test>
+<test id="AC-5.4" category="e2e">
+  Test environment detection + reactive controller integration: Verify both systems work together seamlessly
+</test>
+
+<!-- Backward Compatibility Tests (AC #4, Task 4) -->
+<test id="AC-4.1" category="regression">
+  Run Epic 2.1 RAG tests: pytest tests/test_rag.py -v → assert all 14/14 tests pass
+</test>
+<test id="AC-4.2" category="integration">
+  Test RAG queries without environment filter: Verify existing usage patterns continue working (no where parameter)
+</test>
+<test id="AC-4.3" category="unit">
+  Verify RobotKnowledgeBase class unchanged: Read source file, assert no modifications to class structure
+</test>
+    </ideas>
+  </tests>
+</story-context>

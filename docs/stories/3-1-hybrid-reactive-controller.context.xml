@@ -1,0 +1,363 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>3</epicId>
+    <storyId>3.1</storyId>
+    <title>Hybrid Reactive Controller</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-03</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/3-1-hybrid-reactive-controller.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Actor Agent</asA>
+    <iWant>to monitor sensors in real-time during plan execution and immediately avoid obstacles or adjust paths</iWant>
+    <soThat>collisions are prevented proactively and replanning frequency is reduced</soThat>
+    <tasks>
+      <task id="1" acs="1,2,3">Implement HybridReactiveController Class</task>
+      <task id="2" acs="2">Integrate Ollama for Quick Detour Decisions</task>
+      <task id="3" acs="4">Extend RobotState Schema with reactive_log</task>
+      <task id="4" acs="5">Integrate Reactive Controller into ActorAgent</task>
+      <task id="5" acs="4">Update VerifierAgent to Adjust Tolerance for Reactive Logs</task>
+      <task id="6" acs="6">Implement Unit Tests</task>
+      <task id="7" acs="6">Implement Integration Tests</task>
+      <task id="8" acs="6">Implement E2E Tests</task>
+      <task id="9" acs="7">Performance Benchmarking</task>
+      <task id="10" acs="7">Documentation Updates</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1" priority="critical">
+      **Level 1 - Emergency Stop (Rule-based)**
+      - Lidar less than 0.15m detected triggers immediate stop (reaction time less than 0.001s)
+      - Return action failure to trigger Verifier replanning
+      - No AI involvement - pure rule-based decision
+      - Test: Unit test validates emergency stop logic
+    </criterion>
+    <criterion id="2" priority="high">
+      **Level 2 - Quick Detour (Ollama AI)**
+      - Lidar between 0.15m and 0.5m detected triggers Ollama tinyllama for detour decision (avg 0.68s, P90 1.03s from Story 3.0)
+      - Path adjusted via x, y, speed parameters and execution continues
+      - No replanning needed - time savings
+      - Test: Unit test validates Ollama detour decision integration
+    </criterion>
+    <criterion id="3" priority="high">
+      **Level 3 - Normal Execution**
+      - Lidar greater than 0.5m triggers execution of plan as designed
+      - No reactive intervention
+      - Test: Unit test validates normal execution path
+    </criterion>
+    <criterion id="4" priority="high">
+      **reactive_log Recording and Propagation**
+      - All reactive interventions recorded with timestamp, type, reason, action_taken, sensor_state
+      - Stored in RobotState.reactive_log field
+      - Passed to Verifier for tolerance expansion (0.1m to 0.3m for reactive adjustments)
+      - Test: Integration test validates log propagation and Verifier tolerance adjustment
+    </criterion>
+    <criterion id="5" priority="critical">
+      **Real-time Execution Guarantee**
+      - check_and_react() called every 64ms
+      - Non-blocking with return time less than 10ms
+      - Multi-agent flow maintained (Planner/Actor/Verifier unchanged)
+      - Test: Performance test validates timing constraints
+    </criterion>
+    <criterion id="6" priority="high">
+      **Test Coverage**
+      - Emergency stop test (unit test)
+      - Ollama detour test (unit test)
+      - reactive_log propagation test (integration test)
+      - Verifier tolerance adjustment test (integration test)
+      - E2E scenario (detour to success)
+      - Minimum 90% code coverage for reactive module
+    </criterion>
+    <criterion id="7" priority="high">
+      **Performance Benchmarking and Validation**
+      - Execute 50+ missions with reactive controller enabled
+      - Measure metrics: collision rate, replanning frequency, mission completion time, success rate
+      - Compare against Epic 2 baseline (Story 2.5 metrics)
+      - Validate goals: 93% collision reduction, 95% success rate, 91% replanning reduction
+      - Generate benchmark report: docs/epic3_benchmark_report.md
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>LLM_ROBOT_2 Architecture - Epic 3 Section 11.3</title>
+        <section>11.3 Story 3.1: Hybrid Reactive Controller Architecture</section>
+        <snippet>Defines 3-level decision architecture (CRITICAL/MODERATE/NORMAL), HybridReactiveController class design with check_and_react() method, ActorAgent integration pattern with 64ms check cycle, and VerifierAgent tolerance adjustment logic (0.1m to 0.3m expansion).</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown - Story 3.1 Definition</title>
+        <section>Story 3.1: Hybrid Reactive Controller (lines 471-544)</section>
+        <snippet>7 acceptance criteria covering emergency stop, Ollama detour, normal execution, reactive_log propagation, real-time guarantees, test coverage, and performance benchmarking. Expected impact: 93% collision reduction, 91% replanning reduction, 95% success rate.</snippet>
+      </doc>
+      <doc>
+        <path>docs/tech-spec-epic-3.md</path>
+        <title>Epic 3 Technical Specification</title>
+        <section>Dependencies and Integrations, Performance NFRs</section>
+        <snippet>Ollama integration specifications, performance targets (reactive check less than 10ms, Ollama detour ~680ms avg), graceful degradation patterns, and Epic 3 success metrics.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ollama_setup_guide.md</path>
+        <title>Ollama Setup Guide (Story 3.0 Deliverable)</title>
+        <section>Installation, API Usage, Performance Benchmarks</section>
+        <snippet>Ollama client initialization patterns, JSON parsing with markdown code block handling, TinyLlama performance metrics (680ms avg, 1027ms P90), and graceful degradation strategy established in Story 3.0.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/3-0-ollama-setup.md</path>
+        <title>Story 3.0: Ollama Setup & Validation (Completed)</title>
+        <section>Completion Notes List, Learnings</section>
+        <snippet>Ollama infrastructure validated and ready. Key learnings: TinyLlama wraps JSON in markdown code blocks (strip before parsing), performance validated (680ms avg, 1027ms P90), avoid Unicode emojis (Windows cp949 errors), graceful degradation path documented.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>src/agents/actor_agent.py</path>
+        <kind>agent</kind>
+        <symbol>ActorAgent</symbol>
+        <lines>1-534</lines>
+        <reason>Must integrate HybridReactiveController initialization and call check_and_react() every 64ms during _execute_move(). Add get_reactive_log() method to retrieve intervention list and update RobotState before returning to Verifier.</reason>
+      </artifact>
+      <artifact>
+        <path>src/schemas/robot_state.py</path>
+        <kind>schema</kind>
+        <symbol>RobotState</symbol>
+        <lines>1-80</lines>
+        <reason>Must add reactive_log: List[Dict[str, Any]] = Field(default_factory=list) field to store reactive interventions. This is the data structure that propagates reactive context from Actor to Verifier.</reason>
+      </artifact>
+      <artifact>
+        <path>src/agents/verifier_agent.py</path>
+        <kind>agent</kind>
+        <symbol>VerifierAgent</symbol>
+        <lines>1-318</lines>
+        <reason>Must modify verification logic to check RobotState.reactive_log and expand tolerance from 0.1m to 0.3m when reactive interventions are present. Implements tolerance adjustment per AC #4.</reason>
+      </artifact>
+      <artifact>
+        <path>src/sensors/sensor_manager.py</path>
+        <kind>sensor</kind>
+        <symbol>SensorManager</symbol>
+        <lines>1-200</lines>
+        <reason>Source of sensor data (Lidar, GPS, IMU, Camera) that HybridReactiveController will consume. Provides get_sensor_data() method with filtered readings established in Story 2.2.</reason>
+      </artifact>
+      <artifact>
+        <path>src/orchestrator.py</path>
+        <kind>orchestrator</kind>
+        <symbol>Orchestrator</symbol>
+        <lines>1-307</lines>
+        <reason>Multi-agent coordination layer. Reactive controller operates within Actor execution, preserving Planner → Actor → Verifier flow. No modifications needed but must understand flow preservation requirement.</reason>
+      </artifact>
+      <artifact>
+        <path>src/safety/safety_validator.py</path>
+        <kind>safety</kind>
+        <symbol>SafetyValidator</symbol>
+        <lines>1-200</lines>
+        <reason>Story 2.3 safety constraint system. Reactive controller emergency stop (Level 1 CRITICAL) complements but does not replace SafetyValidator. Both systems work together for defense-in-depth.</reason>
+      </artifact>
+      <artifact>
+        <path>tests/test_ollama_setup.py</path>
+        <kind>test</kind>
+        <symbol>TestOllamaSetup, TestOllamaPerformance, TestOllamaJSONParsing</symbol>
+        <lines>1-436</lines>
+        <reason>Story 3.0 test patterns for Ollama integration. Reference for mocking Ollama client, JSON parsing validation, and performance testing patterns. 5/5 tests passed validating infrastructure readiness.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <package name="crewai" version=">=0.1.0" />
+        <package name="pydantic" version=">=2.0.0" />
+        <package name="ollama" version=">=0.1.0" />
+        <package name="httpx" version=">=0.25.0" />
+        <package name="loguru" version=">=0.7.0" />
+        <package name="pytest" version=">=7.4.0" />
+        <package name="pytest-asyncio" version=">=0.21.0" />
+        <package name="pytest-cov" version=">=4.1.0" />
+        <package name="numpy" version=">=1.24.0,<2.0.0" />
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="architecture">
+      **Multi-agent Flow Preservation**: Reactive controller operates WITHIN Actor execution. Planner → Actor → Verifier flow remains unchanged. Do NOT bypass or replace the multi-agent architecture.
+    </constraint>
+    <constraint type="performance">
+      **Real-time Guarantees**: check_and_react() must return in less than 10ms (95th percentile). Use non-blocking patterns, avoid I/O in critical path. 64ms check cycle is non-negotiable for real-time responsiveness.
+    </constraint>
+    <constraint type="integration">
+      **Ollama Integration Pattern (from Story 3.0)**: Use ollama.Client with host="http://localhost:11434", model="tinyllama". Strip markdown code blocks before JSON parsing (TinyLlama behavior). Handle ConnectionError, TimeoutException, JSONDecodeError with fallback to CRITICAL mode.
+    </constraint>
+    <constraint type="data">
+      **reactive_log Structure**: Each entry must include: timestamp (ISO format), type (CRITICAL/MODERATE/NORMAL), reason (string), action_taken (dict), sensor_state (dict). This is a List[Dict[str, Any]] stored in RobotState.
+    </constraint>
+    <constraint type="testing">
+      **Test Coverage Standard (from Epic 1-2)**: Minimum 90% code coverage for src/reactive/ module. Unit tests for each decision level, integration tests for data flow, E2E tests for full scenarios, benchmarks for performance validation (50+ missions).
+    </constraint>
+    <constraint type="safety">
+      **Defense-in-Depth**: Emergency stop (Level 1 CRITICAL) is first line of defense. SafetyValidator (Story 2.3) provides second layer. Both systems must coexist and complement each other.
+    </constraint>
+    <constraint type="graceful-degradation">
+      **Ollama Failure Handling**: If Ollama unavailable or fails, fall back to CRITICAL mode (emergency stop rules only). Log: "Ollama unavailable, falling back to rules-only reactive mode". System continues operating with reduced capabilities.
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>HybridReactiveController.check_and_react()</name>
+      <kind>method</kind>
+      <signature>
+def check_and_react(self, sensor_data: Dict[str, Any]) -> ReactiveDecision:
+    """
+    3-level reactive decision logic.
+
+    Args:
+        sensor_data: Dict with keys 'lidar', 'gps', 'imu', 'camera'
+
+    Returns:
+        ReactiveDecision with intervention_type, action, metadata
+
+    Timing: Must return in less than 10ms (non-blocking)
+    """
+      </signature>
+      <path>src/reactive/hybrid_controller.py</path>
+    </interface>
+    <interface>
+      <name>ActorAgent._execute_move_with_reactive()</name>
+      <kind>method</kind>
+      <signature>
+def _execute_move_with_reactive(self, action: RobotAction, duration: float) -> RobotState:
+    """
+    Execute move action with 64ms reactive check cycle.
+
+    Args:
+        action: RobotAction with type, parameters
+        duration: Execution duration in seconds
+
+    Returns:
+        RobotState with reactive_log populated
+
+    Integration: Calls HybridReactiveController.check_and_react() every 64ms
+    """
+      </signature>
+      <path>src/agents/actor_agent.py</path>
+    </interface>
+    <interface>
+      <name>VerifierAgent.verify_with_reactive_tolerance()</name>
+      <kind>method</kind>
+      <signature>
+def verify_with_reactive_tolerance(self, robot_state: RobotState) -> VerificationResult:
+    """
+    Verify action result with reactive-aware tolerance.
+
+    Args:
+        robot_state: RobotState with optional reactive_log
+
+    Returns:
+        VerificationResult with success, message
+
+    Logic: If reactive_log non-empty, expand tolerance 0.1m → 0.3m
+    """
+      </signature>
+      <path>src/agents/verifier_agent.py</path>
+    </interface>
+    <interface>
+      <name>RobotState.reactive_log</name>
+      <kind>field</kind>
+      <signature>
+reactive_log: List[Dict[str, Any]] = Field(default_factory=list)
+# Each entry: {
+#   "timestamp": "2025-11-03T10:15:30.123Z",
+#   "type": "CRITICAL" | "MODERATE" | "NORMAL",
+#   "reason": "Obstacle detected at 0.12m",
+#   "action_taken": {"type": "emergency_stop", "params": {}},
+#   "sensor_state": {"lidar_min": 0.12, "position": [x, y, z]}
+# }
+      </signature>
+      <path>src/schemas/robot_state.py</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing framework: pytest (established in Epic 1-2). Test categories: Unit tests for isolated logic (mock Ollama, validate decision logic), Integration tests for data flow (Actor → Verifier reactive_log propagation), E2E tests for full scenarios (emergency stop → replanning, detour → success), Benchmarks for performance validation (50+ missions, compare Epic 2 baseline). Code coverage target: greater than 90% for src/reactive/ module. All tests must pass before story completion.
+    </standards>
+    <locations>
+      tests/test_reactive_controller.py - Unit tests
+      tests/integration/test_reactive_integration.py - Integration tests
+      tests/e2e/test_reactive_e2e.py - End-to-end tests
+      tests/benchmarks/test_reactive_benchmarks.py - Performance benchmarks
+    </locations>
+    <ideas>
+      <idea acs="1">
+        **Test Emergency Stop Logic (Unit)**
+        - Setup: Mock sensor_data with lidar_min = 0.12m (less than 0.15m threshold)
+        - Execute: HybridReactiveController.check_and_react(sensor_data)
+        - Assert: intervention_type = "CRITICAL", action = emergency_stop, reaction_time less than 0.001s
+        - Coverage: AC #1 Level 1 CRITICAL decision path
+      </idea>
+      <idea acs="2">
+        **Test Ollama Detour Decision (Unit, Mocked)**
+        - Setup: Mock sensor_data with lidar_min = 0.3m (0.15m less than x less than 0.5m), mock Ollama client response with DetourPlan JSON
+        - Execute: HybridReactiveController.check_and_react(sensor_data)
+        - Assert: intervention_type = "MODERATE", action contains detour coordinates, Ollama called with correct prompt
+        - Coverage: AC #2 Level 2 MODERATE decision path with AI integration
+      </idea>
+      <idea acs="3">
+        **Test Normal Execution (Unit)**
+        - Setup: Mock sensor_data with lidar_min = 0.8m (greater than 0.5m threshold)
+        - Execute: HybridReactiveController.check_and_react(sensor_data)
+        - Assert: intervention_type = "NONE", no action taken
+        - Coverage: AC #3 Level 3 NORMAL path (no reactive intervention)
+      </idea>
+      <idea acs="4">
+        **Test reactive_log Propagation (Integration)**
+        - Setup: ActorAgent with HybridReactiveController, trigger MODERATE intervention during move
+        - Execute: ActorAgent._execute_move_with_reactive() with obstacle scenario
+        - Assert: RobotState.reactive_log populated with timestamp, type, reason, action_taken, sensor_state
+        - Assert: VerifierAgent receives RobotState with reactive_log, tolerance expanded to 0.3m
+        - Coverage: AC #4 data flow from Actor to Verifier
+      </idea>
+      <idea acs="5">
+        **Test Real-time Performance (Performance)**
+        - Setup: HybridReactiveController with actual Ollama connection
+        - Execute: 1000 iterations of check_and_react() with varied sensor data
+        - Measure: check_and_react() latency for CRITICAL (rule-based) and NORMAL (no-op) modes
+        - Assert: P95 latency less than 10ms for non-Ollama modes, validate 64ms check cycle feasibility
+        - Coverage: AC #5 real-time execution guarantee
+      </idea>
+      <idea acs="6">
+        **Test Ollama Graceful Degradation (Integration)**
+        - Setup: HybridReactiveController with Ollama service stopped (ConnectionError scenario)
+        - Execute: check_and_react() with MODERATE trigger (0.15m less than lidar less than 0.5m)
+        - Assert: Falls back to CRITICAL mode (emergency stop), logs "Ollama unavailable, falling back to rules-only"
+        - Coverage: Constraint: graceful-degradation pattern
+      </idea>
+      <idea acs="7">
+        **Test E2E Scenario: Emergency Stop → Replanning → Success**
+        - Setup: Full Orchestrator with reactive-enabled ActorAgent, obstacle at 0.1m
+        - Execute: execute_mission() with move_forward command
+        - Assert: Emergency stop triggered, action failure returned, Verifier triggers replanning, alternative plan succeeds
+        - Coverage: AC #6 E2E test, validates multi-agent flow preservation with reactive layer
+      </idea>
+      <idea acs="7">
+        **Test E2E Scenario: Ollama Detour → Continue → Success**
+        - Setup: Full Orchestrator with reactive-enabled ActorAgent, obstacle at 0.3m
+        - Execute: execute_mission() with move_forward command
+        - Assert: Ollama detour triggered, path adjusted, mission continues without replanning, reactive_log populated, Verifier tolerance expanded, mission succeeds
+        - Coverage: AC #6 E2E test, validates Level 2 MODERATE AI-powered detour in full system
+      </idea>
+      <idea acs="7">
+        **Benchmark: 50+ Missions with Reactive Controller**
+        - Setup: Test suite with 50+ varied missions (different obstacle configurations, mission types)
+        - Execute: Run all missions with reactive controller enabled, measure collision rate, replanning frequency, mission completion time, success rate
+        - Compare: Against Epic 2 baseline metrics from Story 2.5 evaluation
+        - Assert: Collision reduction greater than or equal to 93%, success rate greater than or equal to 95%, replanning reduction greater than or equal to 91%
+        - Generate: docs/epic3_benchmark_report.md with tables, charts, analysis
+        - Coverage: AC #7 performance benchmarking and validation
+      </idea>
+    </ideas>
+  </tests>
+</story-context>

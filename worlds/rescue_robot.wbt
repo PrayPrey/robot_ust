@@ -1,0 +1,459 @@
+#VRML_SIM R2025a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/factory/containers/protos/CardboardBox.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/robots/adept/pioneer3/protos/Pioneer3dx.proto"
+
+WorldInfo {
+  info [
+    "LLM_ROBOT_2 - Generic LLM-based Robot Control Framework"
+    "First use case: Search & Rescue Robot"
+    "Robot: Pioneer 3-DX with Camera, Lidar, GPS, and IMU sensors"
+    "Enhanced with multiple sensors for comprehensive integration"
+  ]
+  title "Rescue Robot Simulation - Enhanced Multi-Sensor Environment"
+  basicTimeStep 16
+  contactProperties [
+    ContactProperties {
+      coulombFriction [
+        0.5
+      ]
+    }
+  ]
+}
+
+Viewpoint {
+  fieldOfView 0.85
+  orientation -0.3588 0.1311 0.9241 2.4901
+  position 6.5 -6.0 8.5
+  follow "rescue_robot"
+}
+
+TexturedBackground {
+}
+
+TexturedBackgroundLight {
+}
+
+# Rescue environment floor (10m x 10m)
+RectangleArena {
+  floorSize 10 10
+  floorTileSize 2 2
+  wallThickness 0.15
+  wallHeight 0.8
+  wallAppearance PBRAppearance {
+    baseColorMap ImageTexture {
+      url [
+        "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/default/worlds/textures/red_brick_wall.jpg"
+      ]
+    }
+    roughness 1
+    metalness 0
+    textureTransform TextureTransform {
+      scale 15 15
+    }
+  }
+}
+
+# Obstacles - Simulating debris and collapsed structures
+CardboardBox {
+  translation -2.5 1.8 0.3
+  name "obstacle_1"
+  size 0.6 0.6 0.6
+}
+
+CardboardBox {
+  translation 1.2 -2.3 0.3
+  name "obstacle_2"
+  size 0.8 0.4 0.6
+}
+
+CardboardBox {
+  translation 3.0 2.5 0.3
+  name "obstacle_3"
+  size 0.5 0.9 0.6
+}
+
+CardboardBox {
+  translation -1.5 -3.2 0.3
+  name "obstacle_4"
+  size 0.7 0.5 0.6
+}
+
+CardboardBox {
+  translation 2.8 -0.5 0.3
+  name "obstacle_5"
+  size 0.4 0.7 0.6
+}
+
+# Additional obstacles for complex environment
+CardboardBox {
+  translation -3.2 0.8 0.4
+  name "obstacle_6"
+  size 0.8 0.8 0.8
+}
+
+CardboardBox {
+  translation 0.5 3.5 0.25
+  name "obstacle_7"
+  size 0.5 0.5 0.5
+}
+
+# Mission Waypoints
+# Entrance marker - RED (on wall at -5, -5 corner)
+Solid {
+  translation -4.85 -4.85 0.5
+  rotation 0 0 1 0.785398
+  name "entrance"
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 1 0 0
+        metalness 0
+        roughness 0.3
+        emissiveColor 1 0 0
+        emissiveIntensity 0.5
+      }
+      geometry Box {
+        size 0.8 0.1 0.8
+      }
+    }
+  ]
+}
+
+# Exit marker - BLUE (on wall at 5, 5 corner)
+Solid {
+  translation 4.85 4.85 0.5
+  rotation 0 0 1 0.785398
+  name "exit"
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0 0 1
+        metalness 0
+        roughness 0.3
+        emissiveColor 0 0 1
+        emissiveIntensity 0.5
+      }
+      geometry Box {
+        size 0.8 0.1 0.8
+      }
+    }
+  ]
+}
+
+# Target/Goal areas
+CardboardBox {
+  translation -1.8 -2.5 0.2
+  name "target_area_1"
+  size 0.4 0.4 0.4
+}
+
+CardboardBox {
+  translation 3.8 3.2 0.2
+  name "target_area_2"
+  size 0.4 0.4 0.4
+}
+
+# ========== PICKUP OBJECT (Randomly positioned by Supervisor) ==========
+# Object placed on a taller pedestal (z=0.30m) so robot arm can reach horizontally
+# Arm base height: 22cm, with shoulder=90° arm extends horizontally at z≈0.22m
+# Pedestal raises object to z=0.30m for comfortable pickup with arm angled down
+DEF PICKUP_OBJECT Solid {
+  translation 0 0 0.30
+  children [
+    # Pedestal/Platform (visual only - no boundingObject to avoid Lidar detection)
+    Solid {
+      translation 0 0 -0.10
+      children [
+        Shape {
+          appearance PBRAppearance {
+            baseColor 0.4 0.4 0.4
+            metalness 0.2
+            roughness 0.8
+          }
+          geometry Cylinder {
+            height 0.20
+            radius 0.05
+          }
+        }
+      ]
+      # No boundingObject - prevents Lidar from detecting pedestal when object is held
+    }
+    # The actual pickup object (orange cube on top)
+    Shape {
+      appearance PBRAppearance {
+        baseColor 1 0.5 0
+        metalness 0.3
+        roughness 0.5
+        emissiveColor 0.3 0.15 0
+      }
+      geometry Box {
+        size 0.05 0.05 0.05
+      }
+    }
+  ]
+  name "pickup_object"
+  # No boundingObject or physics - object is controlled purely by Supervisor API
+  # This prevents the object from affecting robot physics (no weight, no collisions)
+}
+
+# Rescue Robot - Pioneer 3-DX with comprehensive sensor suite
+# Sensors: Camera, Lidar, GPS, IMU (InertialUnit)
+# Starting position: Near entrance (-3.8, -3.8), facing exit (45 degrees)
+DEF RESCUE_ROBOT Pioneer3dx {
+  translation -3.8 -3.8 0.0975
+  rotation 0 0 1 0.785398
+  name "rescue_robot"
+  supervisor TRUE
+  controller "rescue_robot_controller"
+  controllerArgs [
+    "--mode"
+    "web"
+  ]
+  extensionSlot [
+    Camera {
+      translation 0.12 0 0.05
+      rotation 0 1 0 0
+      name "front_camera"
+      fieldOfView 1.047
+      width 640
+      height 480
+      far 10
+      noise 0.02
+    }
+    Lidar {
+      translation 0.1 0 0.15
+      rotation 0 0 1 0
+      name "lidar"
+      horizontalResolution 512
+      fieldOfView 6.28
+      verticalFieldOfView 0.1
+      numberOfLayers 1
+      minRange 0.1
+      maxRange 8.0
+      noise 0.01
+    }
+    GPS {
+      translation 0 0 0.2
+      name "gps"
+    }
+    InertialUnit {
+      translation 0 0 0.2
+      name "imu"
+      noise 0.005
+    }
+    # ========== SIMPLE 2-DOF ARM WITH GRIPPER ==========
+    # Arm mounted on top of robot body (centered, 5cm forward for better reach)
+    # Total reach: 5cm base offset + 12cm upper + 15cm forearm = 32cm from robot center
+    Solid {
+      translation 0.05 0 0.22
+      name "arm_base"
+      children [
+        Shape {
+          appearance PBRAppearance {
+            baseColor 0.3 0.3 0.3
+            metalness 0.5
+          }
+          geometry Cylinder {
+            height 0.04
+            radius 0.03
+          }
+        }
+        # Shoulder Joint (rotates arm up/down)
+        HingeJoint {
+          jointParameters HingeJointParameters {
+            axis 0 1 0
+            anchor 0 0 0.02
+          }
+          device [
+            RotationalMotor {
+              name "arm_shoulder"
+              maxVelocity 1.0
+              maxTorque 10.0
+              minPosition -1.57
+              maxPosition 1.57
+            }
+            PositionSensor {
+              name "arm_shoulder_sensor"
+            }
+          ]
+          endPoint Solid {
+            translation 0 0 0.02
+            rotation 0 1 0 0
+            name "upper_arm"
+            children [
+              Shape {
+                appearance PBRAppearance {
+                  baseColor 0.2 0.4 0.8
+                  metalness 0.3
+                }
+                geometry Box {
+                  size 0.025 0.025 0.12
+                }
+              }
+              # Elbow Joint
+              HingeJoint {
+                jointParameters HingeJointParameters {
+                  axis 0 1 0
+                  anchor 0 0 0.06
+                }
+                device [
+                  RotationalMotor {
+                    name "arm_elbow"
+                    maxVelocity 1.0
+                    maxTorque 8.0
+                    minPosition -2.0
+                    maxPosition 2.0
+                  }
+                  PositionSensor {
+                    name "arm_elbow_sensor"
+                  }
+                ]
+                endPoint Solid {
+                  translation 0 0 0.06
+                  rotation 0 1 0 0
+                  name "forearm"
+                  children [
+                    Shape {
+                      appearance PBRAppearance {
+                        baseColor 0.2 0.4 0.8
+                        metalness 0.3
+                      }
+                      geometry Box {
+                        size 0.02 0.02 0.15
+                      }
+                    }
+                    # Gripper Base (at end of 15cm forearm)
+                    Solid {
+                      translation 0 0 0.08
+                      name "gripper_base"
+                      children [
+                        Shape {
+                          appearance PBRAppearance {
+                            baseColor 0.5 0.5 0.5
+                            metalness 0.4
+                          }
+                          geometry Box {
+                            size 0.04 0.06 0.02
+                          }
+                        }
+                        # Left Finger
+                        HingeJoint {
+                          jointParameters HingeJointParameters {
+                            axis 0 1 0
+                            anchor 0 0.02 0.01
+                          }
+                          device [
+                            RotationalMotor {
+                              name "gripper_left"
+                              maxVelocity 2.0
+                              maxTorque 5.0
+                              minPosition -0.5
+                              maxPosition 0.5
+                            }
+                          ]
+                          endPoint Solid {
+                            translation 0 0.02 0.035
+                            name "finger_left"
+                            children [
+                              Shape {
+                                appearance PBRAppearance {
+                                  baseColor 0.8 0.2 0.2
+                                  metalness 0.2
+                                }
+                                geometry Box {
+                                  size 0.01 0.01 0.05
+                                }
+                              }
+                            ]
+                            boundingObject Box {
+                              size 0.01 0.01 0.05
+                            }
+                            physics Physics {
+                              density -1
+                              mass 0.005
+                            }
+                          }
+                        }
+                        # Right Finger
+                        HingeJoint {
+                          jointParameters HingeJointParameters {
+                            axis 0 1 0
+                            anchor 0 -0.02 0.01
+                          }
+                          device [
+                            RotationalMotor {
+                              name "gripper_right"
+                              maxVelocity 2.0
+                              maxTorque 5.0
+                              minPosition -0.5
+                              maxPosition 0.5
+                            }
+                          ]
+                          endPoint Solid {
+                            translation 0 -0.02 0.035
+                            name "finger_right"
+                            children [
+                              Shape {
+                                appearance PBRAppearance {
+                                  baseColor 0.8 0.2 0.2
+                                  metalness 0.2
+                                }
+                                geometry Box {
+                                  size 0.01 0.01 0.05
+                                }
+                              }
+                            ]
+                            boundingObject Box {
+                              size 0.01 0.01 0.05
+                            }
+                            physics Physics {
+                              density -1
+                              mass 0.005
+                            }
+                          }
+                        }
+                      ]
+                      boundingObject Box {
+                        size 0.04 0.06 0.02
+                      }
+                      physics Physics {
+                        density -1
+                        mass 0.02
+                      }
+                    }
+                  ]
+                  boundingObject Box {
+                    size 0.02 0.02 0.15
+                  }
+                  physics Physics {
+                    density -1
+                    mass 0.04
+                  }
+                }
+              }
+            ]
+            boundingObject Box {
+              size 0.025 0.025 0.12
+            }
+            physics Physics {
+              density -1
+              mass 0.05
+            }
+          }
+        }
+      ]
+      boundingObject Cylinder {
+        height 0.04
+        radius 0.03
+      }
+      physics Physics {
+        density -1
+        mass 0.1
+      }
+    }
+  ]
+}

@@ -1,0 +1,231 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>3</storyId>
+    <title>안전 제약 시스템 및 충돌 회피</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-01</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/2-3-safety-constraints.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>시스템</asA>
+    <iWant>충돌 회피 제약을 형식화하고 실행 전 검증</iWant>
+    <soThat>로봇이 안전하게 작동한다</soThat>
+    <tasks>
+      <task id="0" status="partial">
+        <title>Pioneer 3-DX 로봇 설정 및 이동 정확도 개선 (선행 작업)</title>
+        <note>Task 0 부분 완료: Pioneer3DXConfig 생성, ActorAgent 수정, 79/79 테스트 통과. Webots 실제 테스트 대기 중.</note>
+        <subtasks>
+          <subtask status="done">Pioneer 3-DX 로봇 설정 클래스 생성 (src/config/robot_config.py)</subtask>
+          <subtask status="done">ActorAgent 바퀴 속도 계산 수정</subtask>
+          <subtask status="done">이동 정확도 검증 (유닛 테스트 79/79)</subtask>
+          <subtask status="pending">Webots에서 1.5m 이동 테스트 → 95% 이상 정확도</subtask>
+          <subtask status="pending">회전 정확도 테스트 → ±5° 이내</subtask>
+        </subtasks>
+      </task>
+      <task id="1" ac="1,2">
+        <title>안전 제약 정의 및 설정 클래스 구현</title>
+        <subtasks>
+          <subtask>SafetyConstraints Pydantic 클래스 생성 (min_obstacle_distance=0.5m, max_speed=1.0m/s, safe_zone_bounds, emergency_stop_distance=0.2m)</subtask>
+          <subtask>SafetyValidator 클래스 구현 (validate_action 메서드)</subtask>
+          <subtask>SensorManager 통합</subtask>
+        </subtasks>
+      </task>
+      <task id="2" ac="3">
+        <title>Actor Agent 안전 검증 로직 통합</title>
+        <subtasks>
+          <subtask>Actor 초기화 시 SafetyValidator 인스턴스 생성</subtask>
+          <subtask>RobotAction 실행 전 validate_action() 호출</subtask>
+          <subtask>검증 실패 시 action 실행 건너뛰기</subtask>
+          <subtask>RobotAction의 safety_check 필드 활용</subtask>
+        </subtasks>
+      </task>
+      <task id="3" ac="4">
+        <title>안전 위반 처리 및 경고 시스템</title>
+        <subtasks>
+          <subtask>SafetyViolationException 정의 (src/sensors/exceptions.py)</subtask>
+          <subtask>Actor Agent 안전 위반 처리 로직</subtask>
+          <subtask>Loguru로 경고 로그 출력</subtask>
+        </subtasks>
+      </task>
+      <task id="4" ac="5">
+        <title>안전 제약 검증 테스트</title>
+        <subtasks>
+          <subtask>유닛 테스트: test_safety_validator.py (obstacle, speed, bounds, emergency stop)</subtask>
+          <subtask>통합 테스트: test_actor_safety_integration.py</subtask>
+        </subtasks>
+      </task>
+      <task id="5">
+        <title>문서화 및 코드 정리</title>
+        <subtasks>
+          <subtask>SafetyValidator API 문서화</subtask>
+          <subtask>README 업데이트</subtask>
+          <subtask>코드 리뷰 준비</subtask>
+        </subtasks>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">안전 제약 정의: 최소 장애물 거리 0.5m, 최대 속도 1m/s, 안전 영역 내 작동 규칙 정의</criterion>
+    <criterion id="2">Pydantic Schema 활용: RobotAction의 safety_check 필드를 사용하여 안전 검증 플래그 관리</criterion>
+    <criterion id="3">Actor 실행 전 안전 검증: Actor Agent가 행동 실행 전 안전 제약 검증 로직 구현</criterion>
+    <criterion id="4">안전 위반 처리: 안전 위반 시 즉시 중단 및 명확한 경고 메시지 출력</criterion>
+    <criterion id="5">테스트 케이스: 장애물 0.3m 거리에서 이동 명령 시 거부되는지 검증</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>System Architecture</title>
+        <section>2.2 Data Models - Safety Constraints</section>
+        <snippet>RobotAction schema includes safety_check: bool field. Safety constraints: Position limits (-5m to 5m), speed limits (0.1 to 2.0 m/s), duration limits (0.1 to 10.0 seconds). Sensor Integration: Use Lidar data for obstacle detection, GPS for boundary checks.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Story 2.3</section>
+        <snippet>안전 제약 시스템 및 충돌 회피. Prerequisites: Story 1.5 (Actor Agent), Story 2.2 (Sensors). Actor실행 전 안전 검증, 최소 장애물 거리 0.5m, 최대 속도 1m/s 제약.</snippet>
+      </doc>
+      <doc>
+        <path>docs/code-review-2025-11-01.md</path>
+        <title>Story 2.2 Code Review</title>
+        <section>Reusable Components</section>
+        <snippet>SensorManager.is_path_clear_ahead(min_distance, angle_range) already checks obstacles. SensorManagerConfig uses Pydantic Field validation pattern. Custom exception pattern established in src/sensors/exceptions.py with 4 exception classes.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/2-3-safety-constraints.md</path>
+        <title>Current Story - Safety Constraints</title>
+        <section>Task 0 Completion Notes</section>
+        <snippet>Pioneer 3-DX 로봇 설정 클래스 생성 완료 (src/config/robot_config.py). ActorAgent의 _execute_move() 및 _execute_rotate() 메서드 수정 완료. 79/79 유닛 테스트 통과. Webots 시뮬레이션 실제 테스트 대기 중.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>src/agents/actor_agent.py</path>
+        <kind>agent</kind>
+        <symbol>ActorAgent</symbol>
+        <lines>1-600</lines>
+        <reason>Primary file to modify. Need to add SafetyValidator integration before executing actions. Already modified in Task 0 for accurate movement (lines 281-288, 360-374).</reason>
+      </artifact>
+      <artifact>
+        <path>src/schemas/robot_action.py</path>
+        <kind>schema</kind>
+        <symbol>RobotAction</symbol>
+        <lines>1-150</lines>
+        <reason>Already has safety_check: bool field. Verify field is properly used for safety validation flag management.</reason>
+      </artifact>
+      <artifact>
+        <path>src/sensors/sensor_manager.py</path>
+        <kind>service</kind>
+        <symbol>SensorManager</symbol>
+        <lines>317-359</lines>
+        <reason>Reuse is_path_clear_ahead(min_distance, angle_range) for obstacle detection. Reuse get_obstacles_in_range(max_distance) for detailed analysis. Already implemented in Story 2.2.</reason>
+      </artifact>
+      <artifact>
+        <path>src/sensors/config.py</path>
+        <kind>config</kind>
+        <symbol>SensorManagerConfig</symbol>
+        <lines>1-191</lines>
+        <reason>Follow Pydantic configuration pattern established here. Use same Field validation approach for SafetyConstraints class.</reason>
+      </artifact>
+      <artifact>
+        <path>src/sensors/exceptions.py</path>
+        <kind>exceptions</kind>
+        <symbol>Custom Exceptions</symbol>
+        <lines>1-84</lines>
+        <reason>Extend with SafetyViolationException following existing pattern. 4 exception classes already defined: SensorInitializationError, DeviceNotFoundError, SensorDataError, FilterConfigurationError.</reason>
+      </artifact>
+      <artifact>
+        <path>src/config/robot_config.py</path>
+        <kind>config</kind>
+        <symbol>Pioneer3DXConfig</symbol>
+        <lines>1-131</lines>
+        <reason>Created in Task 0. Pioneer 3-DX specifications (wheel_radius=0.0975m, wheel_distance=0.33m). Accurate kinematics for safe movement.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <package name="pydantic" version=">=2.0.0" purpose="Data validation, SafetyConstraints schema"/>
+        <package name="loguru" version=">=0.7.0" purpose="Safety violation logging"/>
+        <package name="numpy" version=">=1.24.0,&lt;2.0.0" purpose="Sensor data calculations"/>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Follow Pydantic configuration pattern from SensorManagerConfig (src/sensors/config.py)</constraint>
+    <constraint>Follow custom exception pattern from src/sensors/exceptions.py (4 existing exception classes)</constraint>
+    <constraint>Reuse SensorManager methods: is_path_clear_ahead(), get_obstacles_in_range()</constraint>
+    <constraint>Minimum obstacle distance: 0.5m (configurable via SafetyConstraints)</constraint>
+    <constraint>Maximum speed: 1.0 m/s (configurable)</constraint>
+    <constraint>Emergency stop distance: 0.2m</constraint>
+    <constraint>Maintain 79/79 test passing rate - do not break existing tests</constraint>
+    <constraint>Create new directory: src/safety/ for safety-related modules</constraint>
+    <constraint>Task 0 partially complete - builds on Pioneer3DXConfig for accurate movement</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>SafetyConstraints</name>
+      <kind>schema</kind>
+      <signature>class SafetyConstraints(BaseModel): min_obstacle_distance: float = 0.5; max_speed: float = 1.0; safe_zone_bounds: Tuple[float, float, float, float]; emergency_stop_distance: float = 0.2</signature>
+      <path>src/safety/constraints.py</path>
+      <description>Pydantic model defining safety constraint parameters. Follow SensorManagerConfig pattern with Field validation.</description>
+    </interface>
+    <interface>
+      <name>SafetyValidator</name>
+      <kind>class</kind>
+      <signature>class SafetyValidator: __init__(sensor_manager: SensorManager, constraints: SafetyConstraints); validate_action(action: RobotAction) -> Tuple[bool, str]</signature>
+      <path>src/safety/safety_validator.py</path>
+      <description>Core safety validation class. Checks obstacle distance, speed limits, position bounds before action execution. Returns (is_safe, message).</description>
+    </interface>
+    <interface>
+      <name>SafetyValidator.validate_action</name>
+      <kind>method</kind>
+      <signature>def validate_action(self, action: RobotAction) -> Tuple[bool, str]</signature>
+      <path>src/safety/safety_validator.py</path>
+      <description>Validates action against safety constraints. Checks: 1) Obstacle distance via SensorManager.get_obstacles_in_range(), 2) Speed limits via action.speed validation, 3) Position bounds via action.x, action.y validation. Returns (True, "Safe") or (False, "Reason for rejection").</description>
+    </interface>
+    <interface>
+      <name>SafetyViolationException</name>
+      <kind>exception</kind>
+      <signature>class SafetyViolationException(Exception): violation_type: str; message: str</signature>
+      <path>src/sensors/exceptions.py</path>
+      <description>Exception raised when safety constraint is violated. violation_type: "obstacle_too_close", "speed_too_high", "out_of_bounds", "emergency_stop". Follow pattern of existing 4 exception classes.</description>
+    </interface>
+    <interface>
+      <name>ActorAgent.execute_action (modified)</name>
+      <kind>method</kind>
+      <signature>def execute_action(self, action: RobotAction) -> bool</signature>
+      <path>src/agents/actor_agent.py</path>
+      <description>Modified to call SafetyValidator.validate_action() before executing. If validation fails, log warning and return False without executing action. If action.safety_check=False, bypass validation (emergency use).</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Use pytest framework. Follow patterns from Story 2.2 (28/28 tests passing). Mock Webots sensor data for reproducibility. Use Pydantic validation for schema tests. Maintain 100% test pass rate. Current baseline: 79/79 tests passing after Task 0.
+    </standards>
+    <locations>
+      <location>tests/test_safety_validator.py</location>
+      <location>tests/test_actor_safety_integration.py</location>
+    </locations>
+    <ideas>
+      <idea ac="1,2">Test SafetyConstraints Pydantic validation (min_obstacle_distance, max_speed, safe_zone_bounds)</idea>
+      <idea ac="1,3">Test SafetyValidator.validate_action() with mock obstacle at 0.3m (should reject)</idea>
+      <idea ac="1,3">Test SafetyValidator.validate_action() with mock obstacle at 1.0m (should approve)</idea>
+      <idea ac="1,3">Test SafetyValidator.validate_action() with speed 1.5 m/s (should reject, max 1.0 m/s)</idea>
+      <idea ac="1,3">Test SafetyValidator.validate_action() with out-of-bounds position (should reject)</idea>
+      <idea ac="4">Test SafetyValidator.validate_action() with emergency stop distance 0.2m (should trigger emergency)</idea>
+      <idea ac="3">Test Actor executes action when validation passes</idea>
+      <idea ac="3,4">Test Actor skips action when validation fails (logs warning, returns False)</idea>
+      <idea ac="2">Test Actor bypasses validation when action.safety_check=False</idea>
+      <idea ac="5">Integration test: Actor + SafetyValidator + SensorManager with mock Webots data</idea>
+      <idea ac="5">E2E test: Place obstacle at 0.3m → Actor attempts move → Validation rejects → Action not executed</idea>
+    </ideas>
+  </tests>
+</story-context>

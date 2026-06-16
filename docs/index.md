@@ -1,0 +1,181 @@
+# LLM_ROBOT_2 Documentation Index
+
+**Generated:** 2025-12-16
+**Workflow:** document-project v1.2.0
+**Scan Level:** Deep
+
+---
+
+## Project Overview
+
+| Attribute | Value |
+|-----------|-------|
+| **Type** | Monolith |
+| **Primary Language** | Python 3.10+ |
+| **Architecture** | Multi-Agent System + REST API |
+| **Framework** | FastAPI, CrewAI |
+| **Domain** | Robotics / AI Control |
+
+### Quick Reference
+
+- **Tech Stack**: FastAPI + CrewAI + Webots + Ollama + ChromaDB
+- **Entry Point**: `src/main.py` or `uvicorn src.web.server:app`
+- **Architecture Pattern**: Multi-Agent (Planner/Actor/Verifier) + Reactive Control
+
+---
+
+## Generated Documentation
+
+### Core Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Project Overview](./project-overview.md) | Executive summary, features, architecture |
+| [Source Tree Analysis](./source-tree-analysis.md) | Directory structure, entry points |
+| [API Contracts](./api-contracts.md) | REST API and WebSocket endpoints |
+| [Data Models](./data-models.md) | Pydantic schemas and types |
+| [Development Guide](./development-guide.md) | Setup, testing, workflow |
+
+### Architecture Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Architecture Overview](./architecture-overview.md) | High-level system design |
+| [Architecture Core](./architecture-core.md) | Core components |
+| [Architecture Epic 3](./architecture-epic3.md) | Real-time control architecture |
+| [Architecture (Full)](./architecture.md) | Comprehensive architecture |
+
+### Technical Specifications
+
+| Document | Description |
+|----------|-------------|
+| [Tech Spec Epic 3](./tech-spec-epic-3.md) | Real-time control specs |
+| [Epic Definitions](./epics.md) | All epic descriptions |
+| [Test Plan Epic 3](./test_plan_epic3.md) | Testing strategy |
+| [Ollama Setup Guide](./ollama_setup_guide.md) | Local LLM setup |
+
+---
+
+## Story Documentation
+
+### Epic 2: Safety & Evaluation (Completed)
+
+- [Story 2.0: Test Infrastructure](./stories/2-0-test-infrastructure.md)
+- [Story 2.3: Safety Constraints](./stories/2-3-safety-constraints.md)
+- [Story 2.4: Failure Recovery](./stories/2-4-failure-recovery.md)
+- [Story 2.5: Monitoring & Evaluation](./stories/2-5-monitoring-evaluation.md)
+
+### Epic 3: Real-time Control (Current)
+
+- [Story 3.0: Ollama Setup](./stories/3-0-ollama-setup.md)
+- [Story 3.1: Hybrid Reactive Controller](./stories/3-1-hybrid-reactive-controller.md)
+- [Story 3.2: FastAPI Web Server](./stories/3-2-fastapi-web-server.md)
+- [Story 3.3: Environment-Aware Planning](./stories/3-3-environment-aware-planning.md)
+- [Story 3.5: Integration Testing](./stories/3-5-integration-testing.md)
+- [Story 3.6: Production Fixes](./stories/3-6-production-fixes.md)
+- [Story 3.7: Architectural Refactoring](./stories/3-7-architectural-refactoring.md)
+
+---
+
+## Retrospectives
+
+- [Epic 2 Retrospective (2025-11-02)](./retrospectives/epic-2-retro-2025-11-02.md)
+- [Epic 3 Retrospective (2025-12-15)](./retrospectives/epic-3-retro-2025-12-15.md)
+
+## Archive
+
+- [Epic 1 Completed](./archive/epic-1-completed.md)
+- [Epic 2 Completed](./archive/epic-2-completed.md)
+
+---
+
+## Getting Started
+
+### Quick Start
+
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Configure environment
+cp .env.template .env
+# Edit .env with OPENAI_API_KEY
+
+# 3. Install Ollama
+ollama pull tinyllama
+
+# 4. Start web server
+uvicorn src.web.server:app --reload
+
+# 5. Open browser
+# http://localhost:8000
+```
+
+### Natural Language Commands
+
+**Korean:**
+- "3미터 전진하세요"
+- "90도 왼쪽으로 회전하세요"
+- "장애물을 회피하며 출구로 이동하세요"
+
+**English:**
+- "Move forward 3 meters"
+- "Turn left 90 degrees"
+- "Navigate to exit while avoiding obstacles"
+
+---
+
+## API Quick Reference
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/health` | Health check |
+| GET | `/api/status` | Robot status |
+| POST | `/api/mission` | Execute mission |
+| POST | `/api/stop` | Emergency stop |
+| WS | `/ws/control` | Mission commands |
+| WS | `/ws/robot-status` | 10Hz status broadcast |
+
+---
+
+## Source Code Map
+
+```
+src/
+├── agents/         → Multi-agent system (CrewAI)
+├── schemas/        → Pydantic data models
+├── rag/            → ChromaDB knowledge base
+├── reactive/       → Obstacle avoidance (Ollama)
+├── safety/         → Safety validation
+├── web/            → FastAPI server
+├── sensors/        → Sensor processing
+├── orchestrator.py → Mission coordination
+└── main.py         → Entry point
+```
+
+---
+
+## Test Coverage
+
+| Category | Files | Status |
+|----------|-------|--------|
+| Unit | 15+ | Passing |
+| Integration | 8 | Passing |
+| E2E | 3 | Passing |
+| Performance | 1 | Passing |
+
+Run tests: `pytest tests/ -v`
+
+---
+
+## Support
+
+1. Check [Development Guide](./development-guide.md)
+2. Review story files in `docs/stories/`
+3. Check mission logs in `logs/`
+4. Run tests to verify system state
+
+---
+
+*Master index for AI-assisted development. Point PRD workflows to this file.*
+*Generated by BMad Document Project Workflow*

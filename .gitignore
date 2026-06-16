@@ -1,0 +1,121 @@
+# LLM_ROBOT_2 - Generic LLM-based Robot Control Framework
+# .gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+ENV/
+env/
+.venv
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+log/
+
+# Data
+data/raw/
+data/processed/
+*.csv
+*.json
+*.pkl
+
+# ChromaDB
+chroma/
+*.db
+*.sqlite
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Webots
+.wbt~
+.wbproj~
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Credentials
+*.pem
+*.key
+credentials.json
+
+# OS
+Thumbs.db
+
+# ============================================================
+# Added for public GitHub publish (PrayPrey/robot_ust)
+# ============================================================
+
+# Third-party / tooling (own git repos, ~1.7GB venv, agent state)
+BMAD-METHOD/
+clear-thought-mcp-server/
+bmad/
+_bmad/
+.omc/
+.claude/
+.serena/
+.benchmarks/
+
+# Archives & media
+*.zip
+*.mp4
+
+# Personal / identifying files
+*.docx
+우윤규_02521144.md
+presentation_script.md
+
+# Stray artifacts
+nul
+=0.0.5
+
+# Re-include data/config JSON needed to run (overrides global *.json above)
+!src/rag/data/*.json
+!data/environment_map.json

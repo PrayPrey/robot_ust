@@ -1,0 +1,341 @@
+{
+  "constraints": [
+    {
+      "id": "const_safety_001",
+      "category": "safety",
+      "environment_type": "indoor",
+      "description": "장애물과 최소 0.5m 안전 거리를 반드시 유지해야 합니다. Lidar 센서가 0.5m 이내의 장애물을 감지하면 즉시 정지합니다. 이는 충돌 방지를 위한 필수 안전 규칙입니다.",
+      "metadata": {
+        "min_obstacle_distance_m": 0.5,
+        "critical_distance_m": 0.3,
+        "action_on_violation": "emergency_stop",
+        "priority": "critical",
+        "enforcement": "automatic"
+      }
+    },
+    {
+      "id": "const_safety_002",
+      "category": "safety",
+      "environment_type": "indoor",
+      "description": "재난 환경에서는 최대 속도를 1.0m/s로 제한합니다. 장애물이 많거나 시야가 제한된 구역에서는 0.5m/s 이하로 감속해야 합니다. 급가속이나 급정지는 센서 오차를 증가시킬 수 있으므로 피해야 합니다.",
+      "metadata": {
+        "max_speed_disaster_mps": 1.0,
+        "max_speed_restricted_mps": 0.5,
+        "acceleration_limit_mps2": 0.5,
+        "deceleration_limit_mps2": 1.0
+      }
+    },
+    {
+      "id": "const_safety_003",
+      "category": "safety",
+      "environment_type": "outdoor",
+      "description": "로봇은 경사 15도 이상의 지형에서 작동할 수 없습니다. IMU 센서로 경사를 모니터링하며, 15도를 초과하면 자동으로 정지하고 경고를 발생시킵니다. 안정적인 평지에서만 작동해야 합니다.",
+      "metadata": {
+        "max_slope_deg": 15,
+        "slope_warning_deg": 10,
+        "auto_stop_on_exceed": true,
+        "imu_monitoring": true
+      }
+    },
+    {
+      "id": "const_boundary_001",
+      "category": "boundaries",
+      "environment_type": "indoor",
+      "description": "로봇의 작업 영역은 10m×10m로 엄격히 제한되어 있습니다. X 좌표: -5m ~ +5m, Y 좌표: -5m ~ +5m 범위를 벗어나는 이동 명령은 자동으로 거부됩니다. 경계 근처에서는 0.2m 버퍼 존을 유지하는 것을 권장합니다.",
+      "metadata": {
+        "workspace_x_min": -5.0,
+        "workspace_x_max": 5.0,
+        "workspace_y_min": -5.0,
+        "workspace_y_max": 5.0,
+        "buffer_zone_m": 0.2,
+        "recommended_x_min": -4.8,
+        "recommended_x_max": 4.8,
+        "recommended_y_min": -4.8,
+        "recommended_y_max": 4.8
+      }
+    },
+    {
+      "id": "const_boundary_002",
+      "category": "boundaries",
+      "environment_type": "indoor",
+      "description": "작업 영역의 중심은 (0, 0) 좌표입니다. 로봇은 일반적으로 중심 근처에서 시작하며, 경계까지의 최대 이동 거리는 약 7.1m(대각선)입니다. 경계를 벗어나려는 시도는 안전 시스템에 의해 차단됩니다.",
+      "metadata": {
+        "origin_x": 0.0,
+        "origin_y": 0.0,
+        "max_diagonal_distance_m": 7.1,
+        "boundary_enforcement": "hard_limit"
+      }
+    },
+    {
+      "id": "const_obstacles_001",
+      "category": "obstacles",
+      "environment_type": "indoor",
+      "description": "환경 내에는 총 7개의 고정 장애물이 존재합니다. 장애물은 0.4m에서 0.9m 높이의 CardboardBox 형태로 배치되어 있습니다. 장애물의 위치는 변하지 않지만, 경로 계획 시 반드시 우회해야 합니다.",
+      "metadata": {
+        "obstacle_count": 7,
+        "obstacle_type": "cardboard_box",
+        "obstacle_height_min_m": 0.4,
+        "obstacle_height_max_m": 0.9,
+        "obstacle_mobility": "static",
+        "avoidance_required": true
+      }
+    },
+    {
+      "id": "const_obstacles_002",
+      "category": "obstacles",
+      "environment_type": "indoor",
+      "description": "장애물 주변 0.7m 이내는 위험 구역으로 간주됩니다(0.5m 안전 거리 + 0.2m 버퍼). 이 구역 내에서는 이동 속도를 0.3m/s 이하로 제한하고, 지속적인 Lidar 모니터링을 수행해야 합니다.",
+      "metadata": {
+        "danger_zone_radius_m": 0.7,
+        "speed_limit_in_danger_zone_mps": 0.3,
+        "continuous_monitoring_required": true
+      }
+    },
+    {
+      "id": "const_zones_001",
+      "category": "zones",
+      "environment_type": "indoor",
+      "description": "작업 영역은 안전 구역과 탐색 구역으로 나뉩니다. 안전 구역은 장애물이 없는 중심부 3m×3m 영역이며, 나머지는 탐색이 필요한 구역입니다. 미션 시작 시 안전 구역에서 출발하는 것을 권장합니다.",
+      "metadata": {
+        "safe_zone_x_min": -1.5,
+        "safe_zone_x_max": 1.5,
+        "safe_zone_y_min": -1.5,
+        "safe_zone_y_max": 1.5,
+        "safe_zone_obstacle_free": true
+      }
+    },
+    {
+      "id": "const_zones_002",
+      "category": "zones",
+      "environment_type": "indoor",
+      "description": "목표 지점(Goal areas)은 2곳이 설정되어 있습니다: 안전 구역(Safe Zone)과 생존자 위치(Victim Location). 미션 성공 기준은 목표 지점에 0.5m 이내로 도달하는 것입니다.",
+      "metadata": {
+        "goal_count": 2,
+        "goal_types": ["safe_zone", "victim_location"],
+        "success_tolerance_m": 0.5,
+        "goal_arrival_verification": true
+      }
+    },
+    {
+      "id": "const_sensor_001",
+      "category": "sensor_limits",
+      "environment_type": "indoor",
+      "description": "Lidar 센서의 유효 범위는 0.1m ~ 8m입니다. 0.1m 이내의 초근접 물체는 감지하지 못하며, 8m 이상 떨어진 장애물은 인식할 수 없습니다. 센서 범위를 고려하여 경로를 계획해야 합니다.",
+      "metadata": {
+        "lidar_min_range_m": 0.1,
+        "lidar_max_range_m": 8.0,
+        "blind_spot_range_m": 0.1,
+        "detection_confidence_high_range_m": [0.5, 6.0]
+      }
+    },
+    {
+      "id": "const_sensor_002",
+      "category": "sensor_limits",
+      "environment_type": "indoor",
+      "description": "카메라의 최대 감지 거리는 10m이지만, 물체 인식 정확도는 5m 이내에서 가장 높습니다. 조명이 어둡거나 안개가 있는 환경에서는 감지 거리가 50% 이상 감소할 수 있습니다.",
+      "metadata": {
+        "camera_max_range_m": 10.0,
+        "camera_optimal_range_m": 5.0,
+        "low_light_penalty_percent": 50,
+        "optimal_lighting": "daylight_or_bright"
+      }
+    },
+    {
+      "id": "const_time_001",
+      "category": "time_limits",
+      "environment_type": "indoor",
+      "description": "단일 미션의 최대 실행 시간은 60초입니다. 이 시간 내에 목표를 달성하지 못하면 미션은 자동으로 타임아웃되어 종료됩니다. 복잡한 작업은 30초 이내로 완료할 수 있도록 계획해야 합니다.",
+      "metadata": {
+        "max_mission_time_sec": 60,
+        "recommended_mission_time_sec": 30,
+        "timeout_action": "auto_terminate",
+        "warning_time_sec": 50
+      }
+    },
+    {
+      "id": "const_time_002",
+      "category": "time_limits",
+      "environment_type": "indoor",
+      "description": "단일 행동(이동, 회전, 스캔)의 최대 실행 시간은 10초로 제한됩니다. 10초를 초과하는 행동은 중단되고 실패로 처리됩니다. 행동 시간을 예측하여 제한 시간 내에 완료되도록 계획해야 합니다.",
+      "metadata": {
+        "max_action_time_sec": 10,
+        "action_timeout_enforcement": true,
+        "timeout_handling": "abort_action"
+      }
+    },
+    {
+      "id": "const_physics_001",
+      "category": "physics",
+      "environment_type": "indoor",
+      "description": "환경의 물리 시뮬레이션은 16ms 타임스텝으로 실행됩니다. 마찰 계수는 0.5이며, 바닥은 평평한 타일 재질입니다. 로봇과 장애물 간의 충돌은 물리 엔진에 의해 시뮬레이션됩니다.",
+      "metadata": {
+        "time_step_ms": 16,
+        "friction_coefficient": 0.5,
+        "floor_material": "tile",
+        "collision_detection": "enabled",
+        "physics_engine": "webots_ode"
+      }
+    },
+    {
+      "id": "const_failure_001",
+      "category": "failure_handling",
+      "environment_type": "indoor",
+      "description": "미션 실패 시 최대 3회까지 재시도가 허용됩니다. 재시도 시 실패 원인(장애물 감지, 경로 차단, 목표 미도달 등)을 분석하여 계획을 수정해야 합니다. 3회 실패 후에는 미션이 완전히 중단됩니다.",
+      "metadata": {
+        "max_retry_count": 3,
+        "failure_analysis_required": true,
+        "replan_on_failure": true,
+        "abort_after_max_retries": true
+      }
+    },
+    {
+      "id": "const_indoor_gps",
+      "category": "sensor_limitation",
+      "environment_type": "indoor",
+      "description": "실내 환경에서는 GPS 신호가 매우 약하거나 사용할 수 없습니다. 위치 추정은 Lidar SLAM 및 IMU 데드 레코닝을 사용해야 합니다. 절대 좌표 대신 상대 좌표 기반 내비게이션을 우선적으로 사용하세요.",
+      "metadata": {
+        "gps_availability": "weak_or_unavailable",
+        "navigation_method": "lidar_slam_imu_dead_reckoning",
+        "coordinate_system": "relative"
+      }
+    },
+    {
+      "id": "const_indoor_ceiling",
+      "category": "environmental",
+      "environment_type": "indoor",
+      "description": "실내 환경에는 천장이 있으며, 일반적으로 높이가 3~5m입니다. Lidar 센서의 상향 측정값이 5m 미만이면 천장이 감지된 것으로 판단합니다. 천장 높이는 경로 계획에 영향을 주지 않지만 환경 분류에 사용됩니다.",
+      "metadata": {
+        "ceiling_present": true,
+        "typical_ceiling_height_m": [3.0, 5.0],
+        "detection_method": "upward_lidar_reading"
+      }
+    },
+    {
+      "id": "const_indoor_lighting",
+      "category": "environmental",
+      "environment_type": "indoor",
+      "description": "실내 환경은 주로 인공 조명(형광등, LED)을 사용합니다. 조명 조건은 일정하지만 그림자 영역이나 어두운 코너가 있을 수 있습니다. 카메라는 실내 조명에 최적화되어 있으며 자동 노출 조정이 필요합니다.",
+      "metadata": {
+        "lighting_type": "artificial",
+        "lighting_consistency": "medium",
+        "camera_optimization": "indoor_lighting"
+      }
+    },
+    {
+      "id": "const_outdoor_gps",
+      "category": "sensor_advantage",
+      "environment_type": "outdoor",
+      "description": "실외 환경에서는 GPS 신호가 강하고 안정적입니다(신호 강도 > 0.8). GPS 기반 절대 좌표 내비게이션을 우선적으로 사용하여 정확한 위치 추정이 가능합니다. Lidar/IMU는 보조 센서로 활용합니다.",
+      "metadata": {
+        "gps_availability": "strong_and_stable",
+        "gps_signal_strength": ">0.8",
+        "navigation_method": "gps_primary_lidar_imu_backup",
+        "coordinate_system": "absolute_global"
+      }
+    },
+    {
+      "id": "const_outdoor_sunlight",
+      "category": "environmental",
+      "environment_type": "outdoor",
+      "description": "실외 환경은 자연광(태양광)을 받습니다. 직사광선에 의해 카메라 노출 조정이 필요하며, 밝은 조명으로 인한 센서 오버샘플링이 발생할 수 있습니다. 카메라 자동 노출 및 게인 조정이 필수적입니다.",
+      "metadata": {
+        "lighting_type": "natural_sunlight",
+        "camera_challenge": "exposure_adjustment_required",
+        "sensor_risk": "oversampling_in_bright_light"
+      }
+    },
+    {
+      "id": "const_outdoor_weather",
+      "category": "environmental",
+      "environment_type": "outdoor",
+      "description": "실외 환경은 날씨 조건(비, 바람, 안개)의 영향을 받을 수 있습니다. 악천후 시 센서 성능이 저하될 수 있으며, 미끄러운 지면은 마찰 계수를 낮출 수 있습니다. 날씨 조건을 모니터링하고 적응형 제어가 필요합니다.",
+      "metadata": {
+        "weather_impact": "possible",
+        "sensor_degradation": "rain_fog_wind",
+        "surface_condition": "variable_friction"
+      }
+    },
+    {
+      "id": "const_outdoor_terrain",
+      "category": "environmental",
+      "environment_type": "outdoor",
+      "description": "실외 환경은 불규칙한 지형(언덕, 자갈, 잔디)을 포함할 수 있습니다. 평탄한 실내 환경과 달리 경사 및 표면 마찰 변화에 주의해야 합니다. IMU로 경사를 지속적으로 모니터링하고 15도 제한을 준수하세요.",
+      "metadata": {
+        "terrain_type": "irregular",
+        "surface_types": ["grass", "gravel", "dirt", "asphalt"],
+        "slope_monitoring_required": true
+      }
+    },
+    {
+      "id": "const_warehouse_space",
+      "category": "environmental",
+      "environment_type": "warehouse",
+      "description": "창고 환경은 대형 개방 공간입니다(평균 Lidar 거리 > 5m). 천장은 높고(보통 5m 이상), 장애물은 드물지만 대형(팔레트, 선반)입니다. 넓은 공간에서 효율적인 경로 계획이 가능합니다.",
+      "metadata": {
+        "space_type": "large_open",
+        "lidar_avg_distance_m": ">5.0",
+        "ceiling_height_m": ">5.0",
+        "obstacle_type": "large_sparse"
+      }
+    },
+    {
+      "id": "const_warehouse_efficiency",
+      "category": "performance",
+      "environment_type": "warehouse",
+      "description": "창고 환경에서는 개방된 공간으로 인해 더 높은 속도(최대 1.5m/s)가 허용됩니다. 장애물이 적고 공간이 넓어 가속도 제한을 0.8m/s²까지 완화할 수 있습니다. 효율성 최적화가 가능합니다.",
+      "metadata": {
+        "max_speed_mps": 1.5,
+        "acceleration_limit_mps2": 0.8,
+        "optimization_priority": "efficiency"
+      }
+    },
+    {
+      "id": "const_warehouse_navigation",
+      "category": "navigation",
+      "environment_type": "warehouse",
+      "description": "창고는 GPS 신호가 약하거나 없는 대형 실내 공간입니다. Lidar 장거리 측정(최대 8m)을 활용한 SLAM과 랜드마크 기반 내비게이션을 사용하세요. 넓은 공간으로 인해 맵 크기가 클 수 있습니다.",
+      "metadata": {
+        "gps_availability": "weak_or_unavailable",
+        "navigation_method": "lidar_slam_landmark",
+        "lidar_range_utilization": "long_range_8m",
+        "map_size": "large"
+      }
+    },
+    {
+      "id": "const_hospital_noise",
+      "category": "operational",
+      "environment_type": "hospital",
+      "description": "병원 환경에서는 소음 최소화가 필수적입니다. 모터 소음, 급제동 소음, 충돌 소음을 피해야 합니다. 최대 속도를 0.7m/s로 제한하고 부드러운 가속/감속(최대 0.3m/s²)을 유지하세요.",
+      "metadata": {
+        "noise_minimization": "critical",
+        "max_speed_mps": 0.7,
+        "max_acceleration_mps2": 0.3,
+        "max_deceleration_mps2": 0.3,
+        "smooth_motion_required": true
+      }
+    },
+    {
+      "id": "const_hospital_smooth_motion",
+      "category": "operational",
+      "environment_type": "hospital",
+      "description": "병원 환경에서는 환자와 의료 장비를 방해하지 않도록 부드러운 움직임이 필요합니다. 급가속, 급회전, 급정지를 피하세요. 움직임은 예측 가능하고 점진적이어야 하며, 회전 속도는 30도/초 이하로 제한됩니다.",
+      "metadata": {
+        "motion_type": "smooth_and_predictable",
+        "max_angular_velocity_deg_per_sec": 30,
+        "avoid": ["sudden_acceleration", "sharp_turns", "abrupt_stops"]
+      }
+    },
+    {
+      "id": "const_hospital_safety",
+      "category": "safety",
+      "environment_type": "hospital",
+      "description": "병원 환경에서는 사람(환자, 의료진, 방문객)과의 충돌을 절대적으로 피해야 합니다. 안전 거리를 1.0m로 확대하고, 사람이 감지되면 즉시 정지합니다. 복도와 좁은 공간에서는 양보 행동을 취하세요.",
+      "metadata": {
+        "min_safety_distance_m": 1.0,
+        "person_detection_priority": "critical",
+        "action_on_person_detected": "immediate_stop",
+        "yielding_behavior": "required_in_narrow_spaces"
+      }
+    }
+  ]
+}

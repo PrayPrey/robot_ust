@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Robot Control - Web Interface</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container-fluid {
+            max-width: 1400px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            font-weight: 600;
+            padding: 15px 20px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin: 2px;
+        }
+
+        .status-connected {
+            background: #28a745;
+            color: white;
+        }
+
+        .status-disconnected {
+            background: #dc3545;
+            color: white;
+        }
+
+        .status-executing {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .status-idle {
+            background: #6c757d;
+            color: white;
+        }
+
+        .position-display {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .sensor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .sensor-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .sensor-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .sensor-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        #commandInput {
+            resize: vertical;
+            min-height: 80px;
+            font-size: 1rem;
+        }
+
+        #submitBtn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            font-weight: 600;
+            padding: 12px 30px;
+            transition: all 0.3s;
+        }
+
+        #submitBtn:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        #submitBtn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        #logContainer {
+            height: 400px;
+            overflow-y: auto;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .log-entry {
+            margin: 5px 0;
+            padding: 8px;
+            border-left: 3px solid transparent;
+            border-radius: 3px;
+        }
+
+        .log-info {
+            border-left-color: #007bff;
+            background: rgba(0, 123, 255, 0.1);
+        }
+
+        .log-success {
+            border-left-color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+        }
+
+        .log-warning {
+            border-left-color: #ffc107;
+            background: rgba(255, 193, 7, 0.1);
+        }
+
+        .log-error {
+            border-left-color: #dc3545;
+            background: rgba(220, 53, 69, 0.1);
+        }
+
+        .log-timestamp {
+            color: #888;
+            font-size: 0.8rem;
+        }
+
+        .reactive-event {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+
+        .reactive-critical {
+            background: #dc3545;
+            color: white;
+        }
+
+        .reactive-moderate {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .reactive-normal {
+            background: #28a745;
+            color: white;
+        }
+
+        .header-title {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header-title h1 {
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header-title p {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="header-title">
+            <h1><i class="bi bi-robot"></i> LLM Robot Control</h1>
+            <p>Natural Language Robot Command & Real-time Monitoring System</p>
+        </div>
+
+        <div class="row">
+            <!-- Left Column: Command Input -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-chat-left-text"></i> Mission Command
+                    </div>
+                    <div class="card-body">
+                        <form id="commandForm">
+                            <div class="mb-3">
+                                <label for="commandInput" class="form-label">
+                                    Enter natural language command:
+                                </label>
+                                <textarea
+                                    class="form-control"
+                                    id="commandInput"
+                                    placeholder="예: 장애물을 회피하며 5미터 전진하세요&#10;Example: Move forward 5 meters while avoiding obstacles"
+                                    maxlength="500"
+                                    required
+                                ></textarea>
+                                <div class="form-text">
+                                    <span id="charCount">0</span> / 500 characters
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="languageSelect" class="form-label">Language:</label>
+                                <select class="form-select" id="languageSelect">
+                                    <option value="ko" selected>한국어 (Korean)</option>
+                                    <option value="en">English</option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100" id="submitBtn">
+                                <i class="bi bi-send"></i> Execute Mission
+                            </button>
+                        </form>
+
+                        <!-- Emergency Stop Button -->
+                        <button type="button" class="btn btn-danger w-100 mt-2" id="emergencyStopBtn">
+                            <i class="bi bi-stop-circle-fill"></i> Emergency Stop
+                        </button>
+
+                        <!-- Manual Reset Button (workaround for stuck state) -->
+                        <button type="button" class="btn btn-outline-secondary w-100 mt-2" id="resetUiBtn">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset UI State
+                        </button>
+
+                        <div class="mt-3">
+                            <div class="d-flex justify-content-between">
+                                <span><strong>Control WebSocket:</strong></span>
+                                <span class="status-badge" id="controlStatus">Disconnected</span>
+                            </div>
+                            <div class="d-flex justify-content-between mt-2">
+                                <span><strong>Status WebSocket:</strong></span>
+                                <span class="status-badge" id="statusWsStatus">Disconnected</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle Column: Robot Status -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-activity"></i> Robot Status
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <strong>Mission State:</strong>
+                            <span class="status-badge ms-2" id="missionState">idle</span>
+                        </div>
+
+                        <div class="position-display">
+                            <div><strong>Position:</strong></div>
+                            <div>X: <span id="posX">0.00</span> m</div>
+                            <div>Y: <span id="posY">0.00</span> m</div>
+                            <div>Z: <span id="posZ">0.00</span> m</div>
+                        </div>
+
+                        <h6 class="mt-3 mb-2"><strong>Sensors:</strong></h6>
+                        <div class="sensor-grid">
+                            <div class="sensor-item">
+                                <div class="sensor-label">Lidar Min</div>
+                                <div class="sensor-value" id="lidarMin">--</div>
+                            </div>
+                            <div class="sensor-item">
+                                <div class="sensor-label">Lidar Avg</div>
+                                <div class="sensor-value" id="lidarAvg">--</div>
+                            </div>
+                            <div class="sensor-item">
+                                <div class="sensor-label">Camera</div>
+                                <div class="sensor-value" id="camera">--</div>
+                            </div>
+                            <div class="sensor-item">
+                                <div class="sensor-label">Yaw</div>
+                                <div class="sensor-value" id="yaw">--</div>
+                            </div>
+                            <div class="sensor-item">
+                                <div class="sensor-label">Battery</div>
+                                <div class="sensor-value" id="battery">--</div>
+                            </div>
+                            <div class="sensor-item">
+                                <div class="sensor-label">Status Age</div>
+                                <div class="sensor-value" id="statusAge">--</div>
+                            </div>
+                        </div>
+
+                        <h6 class="mt-3 mb-2"><strong>Reactive Interventions:</strong></h6>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <div>
+                                <span class="reactive-event reactive-critical">
+                                    CRITICAL: <span id="reactiveCritical">0</span>
+                                </span>
+                            </div>
+                            <div>
+                                <span class="reactive-event reactive-moderate">
+                                    MODERATE: <span id="reactiveModerate">0</span>
+                                </span>
+                            </div>
+                            <div>
+                                <span class="reactive-event reactive-normal">
+                                    NORMAL: <span id="reactiveNormal">0</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Mission Log -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-terminal"></i> Mission Log</span>
+                        <button class="btn btn-sm btn-light" id="clearLogBtn">
+                            <i class="bi bi-trash"></i> Clear
+                        </button>
+                    </div>
+                    <div class="card-body p-2">
+                        <div id="logContainer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- WebSocket Client JavaScript -->
+    <script>
+        // WebSocket connections
+        let controlWs = null;
+        let statusWs = null;
+        let isExecuting = false;
+
+        // Get WebSocket URL (use current host)
+        function getWsUrl(path) {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            return `${protocol}//${window.location.host}${path}`;
+        }
+
+        // Log function with auto-scroll
+        function addLog(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const timestamp = new Date().toLocaleTimeString('ko-KR');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.innerHTML = `<span class="log-timestamp">[${timestamp}]</span> ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // Connect to Control WebSocket (/ws/control)
+        function connectControlWs() {
+            try {
+                controlWs = new WebSocket(getWsUrl('/ws/control'));
+
+                controlWs.onopen = () => {
+                    document.getElementById('controlStatus').textContent = 'Connected';
+                    document.getElementById('controlStatus').className = 'status-badge status-connected';
+                    addLog('✅ Control WebSocket connected', 'success');
+                };
+
+                controlWs.onmessage = (event) => {
+                    let response;
+                    try {
+                        response = JSON.parse(event.data);
+                    } catch (parseError) {
+                        console.error('[DEBUG] Failed to parse WebSocket message:', event.data);
+                        return;
+                    }
+
+                    console.log('[DEBUG] Control WebSocket received:', response.status || response.type || 'unknown', response);
+
+                    // IGNORE status_update messages (they should go to statusWs)
+                    if (response.type === 'status_update' || response.type === 'ping') {
+                        return;  // Ignore these messages on control WebSocket
+                    }
+
+                    // Handle different message types from server
+                    if (response.status === 'executing') {
+                        // Mission started acknowledgment
+                        addLog(`⏳ ${response.message}`, 'info');
+                    } else if (response.status === 'completed' || response.status === 'failed') {
+                        // Mission completion result
+                        console.log('[DEBUG] Mission result received, calling handleMissionResponse');
+                        handleMissionResponse(response);
+                    } else if (response.status === 'error' || response.error) {
+                        // Error message
+                        console.log('[DEBUG] Error response received, resetting state');
+                        resetExecutionState();
+                        addLog(`❌ ${response.message || response.error || 'Unknown error'}`, 'error');
+                    } else if ('success' in response) {
+                        // Has success field but no status - treat as mission result
+                        console.log('[DEBUG] Response has success field, treating as mission result');
+                        handleMissionResponse(response);
+                    } else {
+                        // Unknown format - log but don't block
+                        console.warn('[DEBUG] Unknown response format:', response);
+                        // If we're executing and got an unknown response, it might be a completion
+                        // Better to reset than to stay stuck
+                        if (isExecuting) {
+                            console.log('[DEBUG] Unknown response while executing, resetting state as precaution');
+                            resetExecutionState('Received unknown response format');
+                        }
+                    }
+                };
+
+                controlWs.onerror = (error) => {
+                    addLog('❌ Control WebSocket error', 'error');
+                    console.error('Control WebSocket error:', error);
+                };
+
+                controlWs.onclose = () => {
+                    document.getElementById('controlStatus').textContent = 'Disconnected';
+                    document.getElementById('controlStatus').className = 'status-badge status-disconnected';
+                    addLog('🔌 Control WebSocket disconnected', 'warning');
+
+                    // Reset execution state on disconnect (mission result may have been lost)
+                    if (isExecuting) {
+                        resetExecutionState('Execution state reset due to disconnect');
+                    }
+
+                    // Attempt reconnect after 3 seconds
+                    setTimeout(connectControlWs, 3000);
+                };
+            } catch (error) {
+                addLog(`❌ Failed to connect Control WebSocket: ${error.message}`, 'error');
+                setTimeout(connectControlWs, 3000);
+            }
+        }
+
+        // Connect to Status WebSocket (/ws/robot-status)
+        function connectStatusWs() {
+            try {
+                statusWs = new WebSocket(getWsUrl('/ws/robot-status'));
+
+                statusWs.onopen = () => {
+                    document.getElementById('statusWsStatus').textContent = 'Connected';
+                    document.getElementById('statusWsStatus').className = 'status-badge status-connected';
+                    addLog('✅ Status WebSocket connected', 'success');
+
+                    // Send initial message to enable broadcasting
+                    statusWs.send(JSON.stringify({ action: 'start_broadcasting' }));
+                };
+
+                statusWs.onmessage = (event) => {
+                    const message = JSON.parse(event.data);
+
+                    // Handle different message types
+                    if (message.type === 'status_update' && message.data) {
+                        // Regular status update from broadcast worker
+                        updateRobotStatus(message.data);
+                    } else if (message.type === 'ping') {
+                        // Keep-alive ping, ignore
+                    } else if (message.type === 'broadcast_control') {
+                        // Broadcasting control acknowledgment, ignore
+                    } else {
+                        // Direct status format (fallback)
+                        updateRobotStatus(message);
+                    }
+                };
+
+                statusWs.onerror = (error) => {
+                    addLog('❌ Status WebSocket error', 'error');
+                    console.error('Status WebSocket error:', error);
+                };
+
+                statusWs.onclose = () => {
+                    document.getElementById('statusWsStatus').textContent = 'Disconnected';
+                    document.getElementById('statusWsStatus').className = 'status-badge status-disconnected';
+                    addLog('🔌 Status WebSocket disconnected', 'warning');
+                    // Attempt reconnect after 3 seconds
+                    setTimeout(connectStatusWs, 3000);
+                };
+            } catch (error) {
+                addLog(`❌ Failed to connect Status WebSocket: ${error.message}`, 'error');
+                setTimeout(connectStatusWs, 3000);
+            }
+        }
+
+        // Update robot status display
+        function updateRobotStatus(status) {
+            // Position
+            if (status.position) {
+                document.getElementById('posX').textContent = status.position[0].toFixed(2);
+                document.getElementById('posY').textContent = status.position[1].toFixed(2);
+                document.getElementById('posZ').textContent = status.position[2].toFixed(2);
+            }
+
+            // Sensors
+            if (status.sensors) {
+                document.getElementById('lidarMin').textContent = status.sensors.lidar_min !== undefined
+                    ? status.sensors.lidar_min.toFixed(2) + 'm' : '--';
+                document.getElementById('lidarAvg').textContent = status.sensors.lidar_avg !== undefined
+                    ? status.sensors.lidar_avg.toFixed(2) + 'm' : '--';
+                document.getElementById('camera').textContent = status.sensors.camera_active ? 'Active' : 'Inactive';
+                document.getElementById('yaw').textContent = status.sensors.yaw !== undefined
+                    ? status.sensors.yaw.toFixed(1) + '°' : '--';
+                document.getElementById('battery').textContent = status.sensors.battery !== undefined
+                    ? status.sensors.battery.toFixed(0) + '%' : '--';
+            }
+
+            // Mission state
+            if (status.mission_state) {
+                const missionStateEl = document.getElementById('missionState');
+                missionStateEl.textContent = status.mission_state;
+                missionStateEl.className = 'status-badge ms-2';
+
+                if (status.mission_state === 'idle') {
+                    missionStateEl.classList.add('status-idle');
+                    // Safety: If server says idle but client thinks executing, reset
+                    if (isExecuting) {
+                        resetExecutionState('Server reports idle state - resetting');
+                    }
+                } else {
+                    missionStateEl.classList.add('status-executing');
+                }
+            }
+
+            // Reactive interventions
+            if (status.reactive_log_summary) {
+                document.getElementById('reactiveCritical').textContent = status.reactive_log_summary.CRITICAL || 0;
+                document.getElementById('reactiveModerate').textContent = status.reactive_log_summary.MODERATE || 0;
+                document.getElementById('reactiveNormal').textContent = status.reactive_log_summary.NORMAL || 0;
+            }
+
+            // Status age
+            if (status.timestamp) {
+                const age = Date.now() - new Date(status.timestamp).getTime();
+                document.getElementById('statusAge').textContent = age < 1000 ? '<1s' : `${(age/1000).toFixed(0)}s`;
+            }
+        }
+
+        // Handle mission response
+        function handleMissionResponse(response) {
+            console.log('[DEBUG] handleMissionResponse called with:', response);
+
+            // ALWAYS reset execution state first (before any potential errors)
+            resetExecutionState();
+
+            try {
+                if (response.success) {
+                    addLog(`✅ Mission completed: ${response.message}`, 'success');
+                    // Safe access to optional fields
+                    if (response.duration_seconds !== undefined && response.duration_seconds !== null) {
+                        addLog(`Duration: ${Number(response.duration_seconds).toFixed(2)}s`, 'info');
+                    }
+                    if (response.final_position && Array.isArray(response.final_position)) {
+                        addLog(`Final position: [${response.final_position.map(v => Number(v).toFixed(2)).join(', ')}]`, 'info');
+                    }
+                    if (response.reactive_events && response.reactive_events.length > 0) {
+                        addLog(`⚠️  Reactive interventions: ${response.reactive_events.length} events`, 'warning');
+                    }
+                } else {
+                    addLog(`❌ Mission failed: ${response.message || 'Unknown error'}`, 'error');
+                    // Show duration even for failed missions
+                    if (response.duration_seconds !== undefined && response.duration_seconds !== null) {
+                        addLog(`Duration: ${Number(response.duration_seconds).toFixed(2)}s`, 'info');
+                    }
+                }
+            } catch (err) {
+                console.error('[DEBUG] Error handling mission response:', err);
+                addLog(`⚠️ Response handling error: ${err.message}`, 'warning');
+            }
+
+            // EXTRA SAFETY: Ensure button is enabled after response handling
+            // This is a failsafe in case resetExecutionState didn't work for some reason
+            const submitBtn = document.getElementById('submitBtn');
+            if (submitBtn && submitBtn.disabled) {
+                console.warn('[DEBUG] Button still disabled after handleMissionResponse, forcing enable');
+                submitBtn.disabled = false;
+                submitBtn.removeAttribute('disabled');
+            }
+        }
+
+        // Mission execution timeout (2 minutes max - most missions complete within 60s)
+        let missionTimeout = null;
+        const MISSION_TIMEOUT_MS = 2 * 60 * 1000;  // 2 minutes
+
+        function resetExecutionState(reason = '') {
+            console.log('[DEBUG] resetExecutionState called, reason:', reason || 'none');
+
+            // Force reset all state
+            isExecuting = false;
+
+            // Explicitly enable button with multiple methods for robustness
+            const submitBtn = document.getElementById('submitBtn');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.removeAttribute('disabled');  // Extra safety
+                console.log('[DEBUG] Button disabled state set to:', submitBtn.disabled);
+            }
+
+            // Clear timeout
+            if (missionTimeout) {
+                clearTimeout(missionTimeout);
+                missionTimeout = null;
+            }
+
+            if (reason) {
+                addLog(`⚠️ ${reason}`, 'warning');
+            }
+        }
+
+        // Submit mission command
+        document.getElementById('commandForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            if (!controlWs || controlWs.readyState !== WebSocket.OPEN) {
+                addLog('❌ Control WebSocket not connected', 'error');
+                return;
+            }
+
+            if (isExecuting) {
+                addLog('⏳ Please wait for current mission to complete', 'warning');
+                return;
+            }
+
+            const command = document.getElementById('commandInput').value.trim();
+            const language = document.getElementById('languageSelect').value;
+
+            if (!command) {
+                addLog('❌ Command cannot be empty', 'error');
+                return;
+            }
+
+            const missionRequest = {
+                command: command,
+                language: language
+            };
+
+            isExecuting = true;
+            document.getElementById('submitBtn').disabled = true;
+
+            // Set timeout to auto-reset if no response received
+            missionTimeout = setTimeout(() => {
+                if (isExecuting) {
+                    resetExecutionState('Mission timeout - no response received. Button re-enabled.');
+                }
+            }, MISSION_TIMEOUT_MS);
+
+            addLog(`🚀 Executing: "${command}"`, 'info');
+            controlWs.send(JSON.stringify(missionRequest));
+        });
+
+        // Character counter
+        document.getElementById('commandInput').addEventListener('input', (e) => {
+            document.getElementById('charCount').textContent = e.target.value.length;
+        });
+
+        // Clear log button
+        document.getElementById('clearLogBtn').addEventListener('click', () => {
+            document.getElementById('logContainer').innerHTML = '';
+            addLog('🗑️  Log cleared', 'info');
+        });
+
+        // Manual Reset UI button (workaround for stuck state)
+        document.getElementById('resetUiBtn').addEventListener('click', () => {
+            resetExecutionState('Manual UI reset triggered by user');
+            addLog('🔄 UI state manually reset - you can now submit new commands', 'info');
+        });
+
+        // Emergency Stop button
+        document.getElementById('emergencyStopBtn').addEventListener('click', async () => {
+            if (!confirm('Are you sure you want to emergency stop the robot?')) {
+                return;
+            }
+
+            try {
+                addLog('🛑 Triggering emergency stop...', 'warning');
+
+                const response = await fetch('/api/stop', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    addLog('✅ Robot stopped successfully', 'success');
+                    resetExecutionState();
+                } else {
+                    addLog(`❌ Stop failed: ${result.message || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                addLog(`❌ Emergency stop error: ${error.message}`, 'error');
+            }
+        });
+
+        // Initialize WebSocket connections on page load
+        window.addEventListener('load', () => {
+            addLog('🌐 Initializing LLM Robot Control Interface...', 'info');
+            connectControlWs();
+            connectStatusWs();
+        });
+    </script>
+</body>
+</html>

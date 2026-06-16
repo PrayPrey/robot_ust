@@ -1,0 +1,255 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>5</storyId>
+    <title>모니터링, 로깅, 자동 평가 시스템 및 최종 제출물</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-02</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/2-5-monitoring-evaluation.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>개발자</asA>
+    <iWant>LLM 호출을 모니터링하고 성능을 벤치마크</iWant>
+    <soThat>평가 기준 보너스 점수를 획득하고 최종 제출물을 완성할 수 있다</soThat>
+    <tasks>
+      <task id="1" ac="1">Loguru 통합 로깅 시스템 구현</task>
+      <task id="2" ac="2">OpenLit LLM 모니터링 통합</task>
+      <task id="3" ac="3">pytest 자동 평가 스크립트 작성</task>
+      <task id="4" ac="4">벤치마크 리포트 자동 생성</task>
+      <task id="5" ac="5">평가 명세서 1페이지 작성</task>
+      <task id="6" ac="6">5분 프레젠테이션 영상 스크립트 작성</task>
+      <task id="7" ac="7">최종 코드 정리 및 문서화</task>
+      <task id="8" ac="8">제출용 압축 파일 생성</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">Loguru 설정: 모든 행동, LLM 호출, 센서 데이터를 JSON 형식으로 로깅</criterion>
+    <criterion id="2">OpenLit 통합: LLM 비용, 지연 시간, 토큰 사용량 자동 추적</criterion>
+    <criterion id="3">pytest 자동 평가 스크립트: 성공률, 평균 실행 시간 측정</criterion>
+    <criterion id="4">벤치마크 리포트 생성: 비용/지연 분석, 성능 지표 자동 생성</criterion>
+    <criterion id="5">평가 명세서 작성: 1페이지 분량, 평가 항목별 증거 제시</criterion>
+    <criterion id="6">프레젠테이션 영상 스크립트: 5분 발표용 스크립트 작성</criterion>
+    <criterion id="7">최종 코드 정리: README 업데이트, 문서화 완성</criterion>
+    <criterion id="8">제출용 파일 생성: 이름_학번.zip 형식으로 패키징</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>LLM_ROBOT_2 Architecture</title>
+        <section>1.2 Core Components - Monitoring & Logging Layer</section>
+        <snippet>OpenLit (LLM 추적) + Loguru (행동 로깅) - Monitoring layer defined for LLM cost tracking, latency measurement, and structured JSON logging</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown and Story Details</title>
+        <section>평가 항목별 Story 매핑</section>
+        <snippet>Story 2.5 mapped to: LLM 제어 기술 (6번 - 로깅) and 보너스 (벤치마크, 자동평가). All 8 acceptance criteria defined for monitoring, evaluation, and final deliverables.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic 2 - Story 2.5 Requirements</title>
+        <section>Story 2.5: 모니터링, 로깅, 자동 평가 시스템 및 최종 제출물</section>
+        <snippet>Prerequisites: All Stories 1.1-2.4 (entire project). Final story of Epic 2 focusing on Loguru setup, OpenLit integration, pytest automated evaluation, benchmark reporting, evaluation specification, presentation script, code cleanup, and submission packaging.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/2-4-failure-recovery.md</path>
+        <title>Story 2.4 - Previous Story Reference</title>
+        <section>Dev Agent Record - Completion Notes</section>
+        <snippet>Excellent logging pattern with 98+ logger statements. Production-ready quality with zero findings approval. 3-tier test structure (unit/integration/E2E) achieving 25/25 tests passing (100%).</snippet>
+      </doc>
+      <doc>
+        <path>docs/bmm-workflow-status.md</path>
+        <title>BMM Workflow Status</title>
+        <section>Epic 2 진행 상황</section>
+        <snippet>Epic 2: 4/5 stories complete (80%). Story 2.5 is final story. Deadline: November 3rd. Focus: Complete monitoring, logging, evaluation systems and final submission deliverables.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>src/agents/planner_agent.py</path>
+        <kind>agent</kind>
+        <symbol>PlannerAgent</symbol>
+        <lines>1-500</lines>
+        <reason>Primary LLM consumer requiring OpenLit monitoring. Add logging for plan_mission() and replan_mission() method calls, LLM prompts/responses, RAG queries.</reason>
+      </artifact>
+      <artifact>
+        <path>src/agents/actor_agent.py</path>
+        <kind>agent</kind>
+        <symbol>ActorAgent</symbol>
+        <lines>1-600</lines>
+        <reason>Action execution agent requiring Loguru logging. Log all execute_action() calls, Webots API interactions, sensor data reads, safety validation results.</reason>
+      </artifact>
+      <artifact>
+        <path>src/agents/verifier_agent.py</path>
+        <kind>agent</kind>
+        <symbol>VerifierAgent</symbol>
+        <lines>1-600</lines>
+        <reason>Verification agent with existing 98+ logger statements (Story 2.4 pattern). Extend JSON logging for verify_mission(), analyze_failure_reason(), delegation events.</reason>
+      </artifact>
+      <artifact>
+        <path>src/orchestrator.py</path>
+        <kind>orchestrator</kind>
+        <symbol>Orchestrator</symbol>
+        <lines>1-400</lines>
+        <reason>Central mission coordinator. Add logging for mission lifecycle (start/end), agent transitions, retry loops, final mission status. Critical for benchmark metrics collection.</reason>
+      </artifact>
+      <artifact>
+        <path>tests/test_planner_agent.py</path>
+        <kind>test</kind>
+        <symbol>test_planner_agent</symbol>
+        <lines>1-300</lines>
+        <reason>Existing test infrastructure (19/19 passing). Use as reference for pytest patterns when creating tests/evaluation/test_evaluation.py</reason>
+      </artifact>
+      <artifact>
+        <path>tests/test_failure_recovery.py</path>
+        <kind>test</kind>
+        <symbol>test_failure_recovery</symbol>
+        <lines>1-300</lines>
+        <reason>Unit test example (11/11 passing). Reference for test structure and mock patterns in evaluation tests.</reason>
+      </artifact>
+      <artifact>
+        <path>tests/test_e2e_obstacle_recovery.py</path>
+        <kind>test</kind>
+        <symbol>test_e2e_obstacle_recovery</symbol>
+        <lines>1-450</lines>
+        <reason>E2E test example (7/7 passing). Pattern for full mission cycle testing. Use similar structure for evaluation mission tests.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <package name="crewai" version=">=0.1.0" category="multi-agent" />
+        <package name="pydantic" version=">=2.0.0" category="validation" />
+        <package name="chromadb" version=">=0.4.0" category="rag" />
+        <package name="openai" version=">=1.0.0" category="llm" />
+        <package name="langchain" version=">=0.1.0" category="llm" />
+        <package name="loguru" version=">=0.7.0" category="logging" note="EXISTING - Already in requirements.txt" />
+        <package name="openlit" version=">=0.1.0" category="monitoring" note="EXISTING - Already in requirements.txt" />
+        <package name="pytest" version=">=7.4.0" category="testing" />
+        <package name="pytest-cov" version=">=4.1.0" category="testing" />
+        <package name="numpy" version=">=1.24.0,&lt;2.0.0" category="utility" />
+        <package name="opencv-python" version=">=4.12.0" category="sensors" />
+        <package name="python-dotenv" version=">=1.0.0" category="config" />
+        <package name="pytest-html" version="latest" category="testing" note="ADD - Required for evaluation HTML reports (AC #3)" />
+        <package name="matplotlib" version="latest" category="visualization" note="ADD - Optional for benchmark charts (AC #4)" />
+      </python>
+      <frameworks>
+        <framework name="CrewAI" purpose="Multi-agent orchestration" />
+        <framework name="LangChain" purpose="LLM integration and RAG" />
+        <framework name="Pydantic" purpose="Data validation and function calling schemas" />
+        <framework name="Webots R2023a" purpose="Robot simulation environment" note="Installed separately" />
+        <framework name="ChromaDB" purpose="Vector database for RAG system" />
+        <framework name="pytest" purpose="Testing framework" />
+      </frameworks>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>MUST NOT modify existing agent logic or functionality - only add logging/monitoring instrumentation</constraint>
+    <constraint>All logging MUST use Loguru structured logging with JSON serialization capability</constraint>
+    <constraint>OpenLit integration MUST be non-invasive - automatic instrumentation of OpenAI API calls</constraint>
+    <constraint>pytest evaluation scripts MUST be standalone - executable with single command 'pytest tests/evaluation/'</constraint>
+    <constraint>Benchmark report generation MUST be automated - no manual data entry required</constraint>
+    <constraint>Evaluation specification MUST fit on 1 page - concise evidence with file:line citations</constraint>
+    <constraint>Submission ZIP file MUST exclude logs/, __pycache__/, .env, and temporary files</constraint>
+    <constraint>All new code MUST include docstrings and maintain existing code quality standards (92.5/100)</constraint>
+    <constraint>Testing MUST follow 3-tier structure: unit tests, integration tests, E2E tests (reference Story 2.4)</constraint>
+    <constraint>Final deliverables MUST align with evaluation criteria mapping defined in docs/epics.md</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Loguru Logger Configuration</name>
+      <kind>logging-config</kind>
+      <signature>logger.add(sink, format="{time} {level} {message}", serialize=True, level="DEBUG")</signature>
+      <path>src/utils/logger_config.py</path>
+    </interface>
+    <interface>
+      <name>OpenLit Initialization</name>
+      <kind>monitoring-config</kind>
+      <signature>openlit.init(environment="production", application_name="LLM_robot_2")</signature>
+      <path>src/utils/openlit_config.py</path>
+    </interface>
+    <interface>
+      <name>Benchmark Report Generator</name>
+      <kind>utility-class</kind>
+      <signature>BenchmarkReport.generate(log_files: List[str], output_path: str) -> None</signature>
+      <path>src/utils/benchmark_report.py</path>
+    </interface>
+    <interface>
+      <name>Evaluation Test Suite</name>
+      <kind>pytest-module</kind>
+      <signature>pytest tests/evaluation/test_evaluation.py --html=evaluation_report.html</signature>
+      <path>tests/evaluation/test_evaluation.py</path>
+    </interface>
+    <interface>
+      <name>Submission Packager</name>
+      <kind>script</kind>
+      <signature>python scripts/create_submission.py --name NAME --id STUDENT_ID</signature>
+      <path>scripts/create_submission.py</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing framework: pytest with fixtures, mocks, and parametrized tests.
+      Structure: 3-tier testing (unit, integration, E2E) as established in Story 2.4.
+      Coverage target: 90%+ for critical evaluation/logging code, 100% for evaluation tests.
+      Test organization: Separate tests/evaluation/ directory for Story 2.5 evaluation tests.
+      Existing passing tests: 147 unit tests, 14 integration tests, 109 regression tests (total 270+).
+      HTML reporting: Use pytest-html for evaluation_report.html generation.
+      Mock patterns: Use unittest.mock for LLM calls, Webots API, file I/O.
+      Test execution: Single command 'pytest tests/evaluation/' must run all evaluation tests.
+      Benchmark validation: Automated checks for metric accuracy, report format, file structure.
+      Reference quality: Story 2.4 achieved 25/25 tests passing (100%) with zero code review findings.
+    </standards>
+    <locations>
+      <location>tests/</location>
+      <location>tests/evaluation/</location>
+      <location>tests/test_*.py</location>
+    </locations>
+    <ideas>
+      <test ac="1" desc="Loguru Integration Tests">
+        - test_logger_config_initialization: Verify Loguru setup with JSON format
+        - test_log_file_creation: Check logs/ directory and file naming (mission_{timestamp}.json)
+        - test_log_levels: Validate INFO/DEBUG/WARNING/ERROR level filtering
+        - test_structured_logging: Verify JSON serialization of log messages
+        - test_agent_logging_integration: Check Planner/Actor/Verifier log all key events
+      </test>
+      <test ac="2" desc="OpenLit Monitoring Tests">
+        - test_openlit_initialization: Verify OpenLit init with correct config
+        - test_llm_call_tracking: Mock OpenAI calls, verify metrics collected (cost/latency/tokens)
+        - test_metric_aggregation: Check total calls, average response time calculations
+        - test_dashboard_data: Validate data sent to OpenLit dashboard
+      </test>
+      <test ac="3" desc="pytest Evaluation Script Tests">
+        - test_evaluation_missions_load: Load test_missions.json successfully
+        - test_mission_execution: Run 5 predefined missions, measure success/failure
+        - test_success_rate_calculation: Verify (success_count / total_missions) * 100
+        - test_execution_time_measurement: Check average execution time metric
+        - test_replan_count_tracking: Verify replan events counted correctly
+        - test_html_report_generation: Confirm pytest-html creates evaluation_report.html
+      </test>
+      <test ac="4" desc="Benchmark Report Tests">
+        - test_json_log_parsing: Parse logs/mission_*.json files
+        - test_metric_aggregation: Aggregate performance/LLM/cost metrics
+        - test_report_generation: Generate docs/evaluation/benchmark_report.md
+        - test_report_sections: Verify all sections present (performance/LLM/tokens/cost)
+        - test_markdown_formatting: Check tables, headings, formatting valid
+      </test>
+      <test ac="5,6,7,8" desc="Deliverables Tests">
+        - test_evaluation_spec_exists: Verify docs/evaluation/evaluation_spec.md created
+        - test_evaluation_spec_length: Check page count <= 1
+        - test_presentation_script_exists: Verify docs/evaluation/presentation_script.md created
+        - test_readme_updated: Check README.md has evaluation sections
+        - test_submission_zip_creation: Run scripts/create_submission.py
+        - test_zip_contents: Verify ZIP includes required files, excludes logs/__pycache__
+        - test_zip_size: Check ZIP file < 100MB
+      </test>
+    </ideas>
+  </tests>
+</story-context>
